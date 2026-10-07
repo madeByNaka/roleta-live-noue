@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAF7F2">
+<title>Nouê da Sorte</title>
+<!--
+  NOUÊ DA SORTE: roleta de palco das lives (08 e 09/10/2026).
+  Arquivo único: fonte e logo vão embutidos, então roda SEM INTERNET depois de aberto.
+  Fonte de verdade: src/roleta.html. Depois de editar, rode `python build.py` pra gerar o index.html.
+-->
+<style>
+@font-face{font-family:"Satoshi";src:url(data:font/woff2;base64,{{FONTE}}) format("woff2");font-weight:300 900;font-style:normal;font-display:block}
+:root{
+  --logo:url(data:image/png;base64,{{LOGO}});
+  --fundo:#FAF7F2; --fundo-borda:#F1E9DD; --nude:#EFE5D8; --linha:#E2D6C4;
+  --verde:#00A341; --ouro:#C9A063; --preto:#1A1A1A; --cinza:#7A7065;
+  --margem:4vmin; --escala:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:radial-gradient(ellipse 80% 90% at 32% 50%,#FFFFFF 0%,var(--fundo) 55%,var(--fundo-borda) 100%);
+  font-family:"Satoshi",system-ui,sans-serif;color:var(--preto);-webkit-user-select:none;user-select:none;touch-action:none;
+  opacity:0;transition:opacity .4s}
+body.pronto{opacity:1}
+body.sem-cursor,body.sem-cursor *{cursor:none!important}
+
+/* Layout que se ajusta: deitado = roda e nome lado a lado; em pé = nome em cima, roda embaixo */
+#palco{position:fixed;inset:0;padding:var(--margem);display:grid;grid-template-columns:var(--tam) minmax(0,1fr);grid-template-areas:"roda painel";
+  align-items:center;justify-items:center;column-gap:5vw;transform:scale(var(--escala));transform-origin:center;
+  --tam:min(calc(100vh - 2 * var(--margem)),54vw);--tam:min(calc(100dvh - 2 * var(--margem)),54vw)}
+@media (max-aspect-ratio:6/5){
+  #palco{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"painel" "roda";align-content:center;row-gap:3.5vh;
+    --tam:min(calc(100vw - 2 * var(--margem) - 14vw),calc(100vh - 2 * var(--margem) - 30vh));
+    --tam:min(calc(100vw - 2 * var(--margem) - 14vw),calc(100dvh - 2 * var(--margem) - 30vh))}
+}
+
+#painel{grid-area:painel;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+#logo-grande{width:min(30vw,50vh);aspect-ratio:1220/488;background:var(--preto);-webkit-mask:var(--logo) center/contain no-repeat;mask:var(--logo) center/contain no-repeat}
+#titulo{font-weight:900;font-size:min(7.4vw,12vh);line-height:1;color:var(--verde);margin-top:1.6vh;letter-spacing:-.01em}
+#suspense{margin-top:5vh;min-height:1.3em;font-size:min(3.2vw,5.4vh);font-weight:700;color:var(--cinza);opacity:0;transform:translateY(.4em);transition:opacity .4s,transform .4s}
+body[data-estado="girando"] #suspense{opacity:1;transform:none}
+#suspense i{font-style:normal;animation:ponto 1.2s infinite}
+#suspense i:nth-child(3){animation-delay:.2s}#suspense i:nth-child(4){animation-delay:.4s}
+@keyframes ponto{0%,100%{opacity:.15}40%{opacity:1}}
+@media (max-aspect-ratio:6/5){
+  #logo-grande{width:min(46vw,28vh)}
+  #titulo{font-size:min(11vw,7vh);margin-top:1vh}
+  #suspense{margin-top:1.4vh;font-size:min(5.4vw,3.2vh)}
+}
+
+/* Roda: tudo em % do tamanho dela, então escala junto */
+#roda-caixa{grid-area:roda;position:relative;width:var(--tam);height:var(--tam);cursor:grab}
+body[data-estado="arrastando"] #roda-caixa{cursor:grabbing}
+#sombra{position:absolute;inset:0;border-radius:50%;
+  box-shadow:0 calc(var(--tam) * .035) calc(var(--tam) * .09) rgba(90,64,28,.20),0 calc(var(--tam) * .006) calc(var(--tam) * .018) rgba(90,64,28,.14)}
+#roda{position:absolute;inset:3%;border-radius:50%}
+#roda svg,#aro{display:block;width:100%;height:100%}
+#roda text{font-family:"Satoshi",sans-serif}
+#aro{position:absolute;inset:0;overflow:visible;pointer-events:none}
+.fatia.branco .base{fill:url(#g-branco)}
+.fatia.nude .base{fill:url(#g-nude)}
+.fatia.verde .base{fill:url(#g-verde)}
+.fatia .topo{font-weight:700;letter-spacing:.08em}
+.fatia .destaque{font-weight:900;letter-spacing:.01em}
+.fatia.branco .topo,.fatia.nude .topo{fill:#A0814F}
+.fatia.branco .destaque,.fatia.nude .destaque{fill:#1A1A1A}
+.fatia.verde .topo{fill:rgba(255,255,255,.86)}
+.fatia.verde .destaque{fill:#FFFFFF}
+.fatia .apaga{fill:#FFFFFF;opacity:0;transition:opacity .35s}
+body[data-estado="resultado"] .fatia:not(.vencedora) .apaga{opacity:.62}
+.fatia .realce{fill:none;stroke:none}
+.fatia.vencedora .realce{stroke:#1A1A1A;stroke-width:6;stroke-linejoin:round;animation:pulsar .6s ease-in-out infinite alternate}
+@keyframes pulsar{from{opacity:.35}to{opacity:1}}
+.raio{stroke:var(--linha);stroke-width:2}
+#miolo{position:absolute;left:39%;top:39%;width:22%;height:22%;border-radius:50%;background:var(--preto);display:grid;place-items:center;pointer-events:none;
+  box-shadow:0 0 0 calc(var(--tam) * .007) var(--ouro),0 calc(var(--tam) * .01) calc(var(--tam) * .03) rgba(0,0,0,.22)}
+#miolo .logo{width:68%;aspect-ratio:1220/488;background:#FFFFFF;-webkit-mask:var(--logo) center/contain no-repeat;mask:var(--logo) center/contain no-repeat}
+#ponteiro{position:absolute;left:93.5%;top:45.4%;width:13%;height:9.2%;transform-origin:73.8% 50%;pointer-events:none;
+  filter:drop-shadow(0 calc(var(--tam) * .006) calc(var(--tam) * .01) rgba(0,0,0,.25))}
+#ponteiro svg{display:block;width:100%;height:100%}
+
+/* Resultado */
+#resultado{position:absolute;inset:0;display:grid;place-items:center;background:rgba(250,247,242,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+#resultado.aberto{opacity:1;visibility:visible;transition:opacity .35s}
+#confete{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cartao{position:relative;width:min(92vw,1400px);max-height:92vh;padding:4.5vmin 5vmin 3.6vmin;border-radius:3vmin;background:#FFFFFF;border:1px solid #EADFCF;text-align:center;
+  box-shadow:0 3vmin 9vmin rgba(90,64,28,.20);transform:scale(.9);transition:transform .45s cubic-bezier(.2,1.3,.4,1)}
+#resultado.aberto .cartao{transform:scale(1)}
+.rotulo{font-weight:700;color:var(--verde);letter-spacing:.24em;padding-left:.24em;font-size:clamp(14px,3vmin,48px)}
+#premio{font-weight:900;line-height:1;margin-top:1.6vmin;color:var(--preto)}
+#premio .linha{display:block;white-space:nowrap}
+#premio .pct{color:var(--verde);line-height:.92;letter-spacing:-.02em}
+#cupom{display:none;margin:2.4vmin auto 0;padding:.9vmin 3vmin;border:max(2px,.3vmin) solid var(--verde);border-radius:999px;align-items:center;gap:1.6vmin}
+#cupom.ativo{display:inline-flex}
+#cupom span{font-weight:700;letter-spacing:.2em;color:var(--verde);font-size:clamp(12px,2vmin,30px)}
+#cupom b{font-weight:900;letter-spacing:.06em}
+#rodape{margin-top:2vmin;font-weight:500;letter-spacing:.14em;color:#9A9086;font-size:clamp(11px,1.6vmin,26px)}
+
+/* Controles (não giram a roleta) */
+#som{position:absolute;right:var(--margem);bottom:var(--margem);width:clamp(40px,6vmin,76px);height:clamp(40px,6vmin,76px);border-radius:50%;
+  border:1.5px solid var(--linha);background:#FFFFFF;color:var(--preto);display:grid;place-items:center;cursor:pointer;box-shadow:0 .4vmin 1.2vmin rgba(90,64,28,.12)}
+#som svg{width:50%;height:50%}
+#som .x{display:none}#som.mudo .x{display:block}#som.mudo .ondas{display:none}#som.mudo{opacity:.6}
+#aviso{position:absolute;left:50%;bottom:calc(var(--margem) + 9vmin);transform:translateX(-50%);padding:1.4vmin 3vmin;border-radius:999px;background:var(--preto);color:#FFFFFF;
+  font-size:clamp(14px,2.6vmin,30px);font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#aviso.visivel{opacity:1}
+#guia{position:absolute;inset:0;display:none;pointer-events:none}
+#guia.visivel{display:block}
+#guia .borda{position:absolute;inset:0;border:8px solid var(--verde)}
+#guia .segura{position:absolute;inset:var(--margem);border:3px dashed rgba(26,26,26,.45)}
+#guia p{position:absolute;left:50%;top:calc(var(--margem) + 2vmin);transform:translateX(-50%);width:min(86vw,1300px);text-align:center;font-size:clamp(14px,2.8vmin,34px);
+  font-weight:700;color:#FFFFFF;background:rgba(26,26,26,.88);padding:1.6vmin 2.4vmin;border-radius:1.4vmin}
+
+.painel{position:absolute;inset:0;display:none;place-items:center;background:rgba(250,247,242,.92)}
+.painel.aberto{display:grid}
+.caixa{width:min(92vw,1400px);max-height:88vh;display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #EADFCF;border-radius:2.4vmin;padding:4vmin;
+  box-shadow:0 3vmin 9vmin rgba(90,64,28,.16);cursor:auto}
+.caixa h2{font-size:clamp(20px,3.6vmin,44px);font-weight:900}
+.caixa .dica{font-size:clamp(13px,2vmin,24px);color:var(--cinza);margin:.6vmin 0 2vmin}
+.botoes{display:flex;flex-wrap:wrap;gap:1.4vmin;margin-bottom:2vmin}
+.botoes button{font:700 clamp(13px,2vmin,24px) "Satoshi",sans-serif;padding:1.2vmin 2.4vmin;border-radius:999px;border:1.5px solid var(--preto);background:#FFFFFF;color:var(--preto);cursor:pointer}
+.botoes button.perigo{border-color:#C4462F;color:#C4462F}
+.rolagem{overflow:auto;flex:1;border-top:1px solid #EADFCF;touch-action:pan-x pan-y}
+table{width:100%;border-collapse:collapse;font-size:clamp(12px,2vmin,24px)}
+th{position:sticky;top:0;background:#FFFFFF;text-align:left;color:var(--verde);font-weight:700;padding:1.2vmin 1vmin;border-bottom:1px solid #EADFCF}
+td{padding:.9vmin 1vmin;border-bottom:1px solid #F1E9DD;white-space:nowrap}
+td.vazio{color:var(--cinza);padding:3vmin 1vmin}
+td input{width:100%;min-width:220px;font:500 clamp(12px,2vmin,24px) "Satoshi",sans-serif;padding:.8vmin 1.2vmin;border-radius:1vmin;border:1px solid var(--linha);
+  background:var(--fundo);color:var(--preto);-webkit-user-select:text;user-select:text;touch-action:auto}
+#ajuda li{list-style:none;font-size:clamp(14px,2.6vmin,30px);padding:1.1vmin 0;border-bottom:1px solid #F1E9DD}
+#ajuda kbd{display:inline-block;min-width:2.2em;text-align:center;font:900 .8em "Satoshi",sans-serif;padding:.2em .5em;margin-right:.6em;border-radius:.4em;border:2px solid var(--preto)}
+</style>
+</head>
+<body data-estado="parado">
+<div id="palco">
+  <div id="roda-caixa" aria-label="Roleta: segure e gire, ou clique pra girar">
+    <div id="sombra"></div>
+    <div id="roda">
+      <svg viewBox="-442 -442 884 884" aria-hidden="true">
+        <defs>
+          <radialGradient id="g-branco" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
+            <stop offset=".25" stop-color="#F6F1E9"/><stop offset="1" stop-color="#FFFFFF"/>
+          </radialGradient>
+          <radialGradient id="g-nude" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
+            <stop offset=".25" stop-color="#E5D7C3"/><stop offset="1" stop-color="#F1E8DC"/>
+          </radialGradient>
+          <radialGradient id="g-verde" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
+            <stop offset=".25" stop-color="#008A36"/><stop offset="1" stop-color="#00A341"/>
+          </radialGradient>
+        </defs>
+        <g id="fatias"></g>
+      </svg>
+    </div>
+    <svg id="aro" viewBox="-470 -470 940 940" aria-hidden="true">
+      <defs>
+        <radialGradient id="g-borda-interna" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
+          <stop offset=".86" stop-color="#7A5A28" stop-opacity="0"/><stop offset="1" stop-color="#7A5A28" stop-opacity=".10"/>
+        </radialGradient>
+        <linearGradient id="g-aro" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#EAD5A9"/><stop offset=".45" stop-color="#C9A063"/><stop offset="1" stop-color="#A9803F"/>
+        </linearGradient>
+      </defs>
+      <circle r="442" fill="url(#g-borda-interna)"/>
+      <circle r="456" fill="none" stroke="url(#g-aro)" stroke-width="26"/>
+      <circle r="443.5" fill="none" stroke="#FFFFFF" stroke-width="2" opacity=".9"/>
+      <circle r="469" fill="none" stroke="#8A6A35" stroke-opacity=".35" stroke-width="1.5"/>
+    </svg>
+    <div id="miolo"><div class="logo"></div></div>
+    <div id="ponteiro">
+      <svg viewBox="0 0 130 92" aria-hidden="true">
+        <path d="M2 46 L84 15.5 A32.3 32.3 0 1 1 84 76.5 Z" fill="#1A1A1A" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="96" cy="46" r="11" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="3"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="painel">
+    <div id="logo-grande" role="img" aria-label="Nouê"></div>
+    <div id="titulo">da sorte</div>
+    <div id="suspense"><span id="suspense-texto"></span><i>.</i><i>.</i><i>.</i></div>
+  </div>
+
+  <div id="resultado" aria-live="polite">
+    <canvas id="confete"></canvas>
+    <div class="cartao">
+      <div class="rotulo" id="rotulo"></div>
+      <div id="premio"></div>
+      <div id="cupom"><span>CUPOM</span><b id="cupom-codigo"></b></div>
+      <div id="rodape"></div>
+    </div>
+  </div>
+
+  <button id="som" class="controle" title="Som (M)" aria-label="Liga e desliga o som">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor"/>
+      <g class="ondas"><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></g>
+      <g class="x"><path d="m22 9-6 6"/><path d="m16 9 6 6"/></g>
+    </svg>
+  </button>
+  <div id="aviso"></div>
+  <div id="guia"><div class="borda"></div><div class="segura"></div>
+    <p>Teste da TV: a moldura verde tem que aparecer inteira. Se cortar, aperte a tecla <b>-</b> até aparecer. <b>G</b> fecha.</p></div>
+
+  <div id="historico" class="painel controle">
+    <div class="caixa">
+      <h2>Histórico de giros</h2>
+      <p class="dica">Fica salvo neste navegador. Anote o ganhador ao lado de cada giro e baixe a planilha no fim da live.</p>
+      <div class="botoes">
+        <button id="btn-baixar">Baixar planilha</button>
+        <button id="btn-apagar" class="perigo">Apagar histórico</button>
+        <button id="btn-fechar-historico">Fechar (H)</button>
+      </div>
+      <div class="rolagem">
+        <table><thead><tr><th>Giro</th><th>Data</th><th>Hora</th><th>Prêmio</th><th>Ganhador</th></tr></thead><tbody id="lista-giros"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="ajuda" class="painel controle">
+    <div class="caixa">
+      <h2>Como operar</h2>
+      <p class="dica">Durante a live, só a roleta. O resto é pra preparar antes.</p>
+      <ul>
+        <li><kbd>segura</kbd>pegue a roleta, arraste e solte: quanto mais força, mais ela gira</li>
+        <li><kbd>clique</kbd>ou Espaço, Enter, setas e o passador de slide: gira sozinha e, depois, limpa o resultado</li>
+        <li><kbd>M</kbd>liga e desliga o som (o botão do canto faz o mesmo)</li>
+        <li><kbd>F</kbd>tela cheia (o primeiro toque também liga)</li>
+        <li><kbd>G</kbd>moldura de teste da TV (overscan)</li>
+        <li><kbd>+</kbd><kbd>-</kbd>aumenta e diminui tudo (<kbd>0</kbd>volta ao normal)</li>
+        <li><kbd>H</kbd>histórico dos giros e planilha</li>
+        <li><kbd>?</kbd>abre e fecha esta ajuda</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIGURAÇÃO (o que muda de uma live pra outra) ===================== */
+const CONFIG = {
+  rotuloResultado: 'VOCÊ GANHOU',
+  suspense: 'E o prêmio é',
+  duracaoGiro: [7, 8.5],    // giro do clique: segundos (sorteia um valor nesse intervalo)
+  voltasMinimas: 5,         // giro do clique
+  forca: {                  // giro na mão (segurar, arrastar e soltar), velocidades em graus por segundo
+    minima: 300,            // abaixo disso não vale: aparece "Gire com mais força"
+    maxima: 1440,           // teto (4 voltas por segundo), pra puxão exagerado não virar borrão
+    voltasMinimas: 1.5,
+  },
+  segurarResultado: 3,      // segundos em que o clique não limpa o resultado (protege do clique duplo)
+  // Ordem = ordem na roda (sentido horário).
+  // peso = tamanho da fatia E chance de cair, à vista (sem peso = 1). Desconto 0.5 = metade da fatia e da chance:
+  // com 12 produtos e 2 descontos, sai desconto em 1 a cada 13 giros (Luan, 07/10: brinde é mais fácil que desconto)
+  // topo = linha pequena da fatia · destaque = linha grande · nome = o que aparece no resultado
+  // cupom = código mostrado no resultado (vazio = não mostra) · ~ no nome = não quebrar a linha ali
+  premios: [
+    { tipo: 'desconto', topo: 'DESCONTO',     destaque: '15%',       nome: '15% de desconto', cupom: '', peso: 0.5 },
+    { tipo: 'produto',  topo: 'SÉRUM MELANO', destaque: 'REATIV 3%', nome: 'Sérum Melano-Reativ~3%' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'MEDIUM',    nome: 'Camuflage Medium' },
+    { tipo: 'produto',  topo: 'MÁSCARA',      destaque: 'CAMUFLAGE', nome: 'Máscara Camuflage' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'LIGHT',     nome: 'Camuflage Light' },
+    { tipo: 'produto',  topo: 'SÉRUM',        destaque: 'GHK-CU',    nome: 'Sérum GHK-Cu' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'PÉROLA',    nome: 'Camuflage Pérola' },
+    { tipo: 'desconto', topo: 'DESCONTO',     destaque: '20%',       nome: '20% de desconto', cupom: '', peso: 0.5 },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'TOUCH',     nome: 'Camuflage Touch' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'SILVER',    nome: 'Camuflage Silver' },
+    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'PRÉ E PÓS', nome: 'Shampoo Pré~e~Pós Camuflage' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'GRAY',      nome: 'Camuflage Gray' },
+    { tipo: 'produto',  topo: 'KIT NUTRIÇÃO', destaque: 'REGENÉR',   nome: 'Kit Nutrição Regenér' },
+    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'COPPER',    nome: 'Camuflage Copper' },
+  ],
+};
+/* ========================================================================================== */
+
+(() => {
+'use strict';
+const PARAMS = new URLSearchParams(location.search);
+const RAPIDO = PARAMS.has('rapido');   // ?rapido = giro do clique em 2 s, só pra teste
+const JANELA = PARAMS.has('janela');   // ?janela = não força tela cheia
+const P = CONFIG.premios, N = P.length;
+const PESOS = P.map(p => p.peso ?? 1), TOTAL = PESOS.reduce((a, b) => a + b, 0);
+const LARG = PESOS.map(w => 360 * w / TOTAL); // largura de cada fatia em graus (= chance de cair)
+const INICIO = [], CENTRO = [];                 // a 1ª fatia fica centrada no ponteiro quando a roda está em 0
+let acumulado = -LARG[0] / 2;
+for (let i = 0; i < N; i++) { INICIO.push(acumulado); CENTRO.push(acumulado + LARG[i] / 2); acumulado += LARG[i]; }
+const R_FATIA = 442, R_MIOLO = 104, R_TEXTO = 392;
+const $ = s => document.querySelector(s);
+const palco = $('#palco'), caixa = $('#roda-caixa'), roda = $('#roda'), ponteiro = $('#ponteiro');
+const mod = (a, b) => ((a % b) + b) % b;
+
+// ---------- guardar no navegador (se falhar, segue só na memória) ----------
+const PREFIXO = 'noue-da-sorte:';
+const guardar = {
+  ler(k, padrao) { try { const v = localStorage.getItem(PREFIXO + k); return v === null ? padrao : JSON.parse(v); } catch (e) { return padrao; } },
+  gravar(k, v) { try { localStorage.setItem(PREFIXO + k, JSON.stringify(v)); } catch (e) {} },
+};
+let giros = guardar.ler('giros', []);
+const salvarGiros = () => guardar.gravar('giros', giros);
+
+// ---------- sorteio: o prêmio sai NO CLIQUE ou NA HORA QUE SOLTA; a animação só leva até ele ----------
+function aleatorio() { const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] / 4294967296; }
+function sortearAlvo() {
+  let r = aleatorio() * TOTAL, k = 0;          // rifa: cada fatia tem tantos "bilhetes" quanto o peso dela
+  while (k < N - 1 && r >= PESOS[k]) { r -= PESOS[k]; k++; }
+  return { k, alvo: CENTRO[k] + (aleatorio() - .5) * .6 * LARG[k] }; // ponto no miolo da fatia, longe da divisa
+}
+
+// ---------- desenho da roda ----------
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, pai) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (pai) pai.appendChild(e);
+  return e;
+}
+const medidor = document.createElement('canvas').getContext('2d');
+function medir(txt, peso, tam, ls) { medidor.font = `${peso} ${tam}px Satoshi`; return medidor.measureText(txt).width + ls * tam * txt.length; }
+
+// Maior fonte que cabe na fatia: o texto vai do aro pro centro e a fatia afina no caminho.
+// Em fatia fina, se a linha pequena (topo) espremer demais a grande, a fatia fica só com a grande.
+function ajustarRotulo(p, graus) {
+  const tanMeia = Math.tan(graus * Math.PI / 360);
+  const desconto = p.tipo === 'desconto';
+  const tentar = comTopo => {
+    let ft = comTopo ? (desconto ? 24 : 23) : 0, fd = desconto ? 84 : 42;
+    const gap = comTopo ? (desconto ? 2 : 4) : 0, folga = 8;
+    for (let i = 0; i < 200; i++) {
+      const H = ft + gap + fd;
+      const xMin = Math.max(R_MIOLO + 14, (H / 2 + folga) / tanMeia);
+      const largura = R_TEXTO - xMin;
+      const cabeD = medir(p.destaque, 900, fd, .01) <= largura;
+      const cabeT = !comTopo || medir(p.topo, 700, ft, .08) <= largura;
+      if ((cabeD && cabeT) || (fd <= 22 && (!comTopo || ft <= 14))) return { ft, fd, H, comTopo };
+      if (!cabeD) fd = Math.max(22, fd - 1);
+      if (!cabeT) ft = Math.max(14, ft - .5);
+    }
+    return { ft, fd, H: ft + gap + fd, comTopo };
+  };
+  const com = tentar(true);
+  if (!p.topo || com.fd >= (desconto ? 50 : 30)) return com;
+  const sem = tentar(false);
+  return sem.fd > com.fd * 1.25 ? sem : com;
+}
+
+function montarRoda() {
+  const g = $('#fatias');
+  g.textContent = '';
+  let produtos = 0;
+  P.forEach((p, i) => {
+    const centro = CENTRO[i], R = R_FATIA + 2;
+    const a0 = INICIO[i] * Math.PI / 180, a1 = (INICIO[i] + LARG[i]) * Math.PI / 180;
+    const d = `M0 0L${(R * Math.cos(a0)).toFixed(2)} ${(R * Math.sin(a0)).toFixed(2)}A${R} ${R} 0 0 1 ${(R * Math.cos(a1)).toFixed(2)} ${(R * Math.sin(a1)).toFixed(2)}Z`;
+    const tema = p.tipo === 'desconto' ? 'verde' : (produtos++ % 2 === 0 ? 'branco' : 'nude');
+    const fatia = el('g', { class: `fatia ${tema}`, 'data-i': i }, g);
+    el('path', { d, class: 'base' }, fatia);
+    const r = ajustarRotulo(p, LARG[i]);
+    const t = el('g', { transform: `rotate(${centro})` }, fatia);
+    const yT = -r.H / 2 + r.ft / 2 + .35 * r.ft, yD = r.H / 2 - r.fd / 2 + .35 * r.fd;
+    if (r.comTopo) el('text', { x: R_TEXTO, y: yT.toFixed(1), class: 'topo', 'font-size': r.ft, 'text-anchor': 'end' }, t).textContent = p.topo;
+    el('text', { x: R_TEXTO, y: yD.toFixed(1), class: 'destaque', 'font-size': r.fd, 'text-anchor': 'end' }, t).textContent = p.destaque;
+    el('path', { d, class: 'apaga' }, fatia);
+    el('path', { d, class: 'realce' }, fatia);
+  });
+  for (let i = 0; i < N; i++) {
+    const a = INICIO[i] * Math.PI / 180;
+    el('line', { x1: R_MIOLO * Math.cos(a), y1: R_MIOLO * Math.sin(a), x2: R_FATIA * Math.cos(a), y2: R_FATIA * Math.sin(a), class: 'raio' }, g);
+  }
+}
+
+// ---------- estado ----------
+let estado = 'parado', travadoAte = 0, angulo = LARG[0] / 2, vencedor = -1, usou = false; // começa com uma divisa no ponteiro
+let ultimaFatia = -1, batida = 0;
+function definirEstado(e) { estado = e; document.body.dataset.estado = e; }
+
+// O ponteiro fica às 3 horas (ângulo 0). Qual fatia está embaixo dele e quanto dela já passou.
+function noPonteiro(ang) {
+  const local = mod(-ang - INICIO[0], 360); // graus andados desde o começo da 1ª fatia
+  let i = 0;
+  while (i < N - 1 && local >= INICIO[i + 1] - INICIO[0]) i++;
+  return { i, frac: 1 - (local - (INICIO[i] - INICIO[0])) / LARG[i] };
+}
+
+// Gira a roda pra 'ang'. A divisa chegando empurra o ponteiro (sentido: 1 horário, -1 anti-horário).
+function aplicarAngulo(ang, sentido) {
+  angulo = ang;
+  roda.style.transform = `rotate(${ang}deg)`;
+  const { i, frac } = noPonteiro(ang);
+  if (ultimaFatia !== -1 && i !== ultimaFatia) tique();
+  ultimaFatia = i;
+  const empurra = sentido > 0 ? (frac > .82 ? (frac - .82) / .18 : 0) : (frac < .18 ? (.18 - frac) / .18 : 0);
+  batida = Math.max(24 * empurra, batida * .8);
+  ponteiro.style.transform = `rotate(${(sentido > 0 ? -1 : 1) * batida}deg)`;
+}
+function acalmarPonteiro() {
+  batida = 0;
+  ponteiro.style.transition = 'transform .25s ease-out';
+  ponteiro.style.transform = 'rotate(0deg)';
+}
+
+// Curvas (u e o retorno vão de 0 a 1)
+function curvaClique(u) { // arranca em 0,4 s e anda as últimas fatias devagar (suspense)
+  const a = .055, v0 = 1 / (a / 2 + (1 - a) / 3);
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  if (u < a) return v0 * u * u / (2 * a);
+  const s = (u - a) / (1 - a);
+  return v0 * a / 2 + v0 * (1 - a) * (1 - Math.pow(1 - s, 3)) / 3;
+}
+const curvaSolta = u => 1 - Math.pow(1 - u, 3); // sai na velocidade da mão e freia até parar
+
+// Distância (positiva) pra andar no sentido dado e parar com 'alvo' no ponteiro, andando pelo menos 'minimo'.
+function distanciaAte(alvo, sentido, minimo) {
+  return sentido > 0 ? minimo + mod(-alvo - (angulo + minimo), 360) : minimo + mod(angulo + alvo - minimo, 360);
+}
+
+function animar(inicio, fim, durMs, curva, aoFim) {
+  const sentido = fim >= inicio ? 1 : -1;
+  roda.style.willChange = 'transform';
+  ponteiro.style.transition = 'none';
+  let t0 = null;
+  const quadro = agora => {
+    if (t0 === null) t0 = agora;
+    const u = Math.min(1, (agora - t0) / durMs);
+    aplicarAngulo(inicio + (fim - inicio) * curva(u), sentido);
+    if (u < 1) { requestAnimationFrame(quadro); return; }
+    roda.style.willChange = 'auto';
+    angulo = mod(fim, 360);
+    roda.style.transform = `rotate(${angulo}deg)`;
+    acalmarPonteiro();
+    aoFim();
+  };
+  requestAnimationFrame(quadro);
+}
+
+// Giro do clique (e do passador de slide)
+function girarClique() {
+  const { k, alvo } = sortearAlvo();
+  const D = distanciaAte(alvo, 1, 360 * CONFIG.voltasMinimas);
+  const [d0, d1] = RAPIDO ? [1.6, 2.2] : CONFIG.duracaoGiro;
+  definirEstado('girando');
+  animar(angulo, angulo + D, (d0 + aleatorio() * (d1 - d0)) * 1000, curvaClique, () => parou(k));
+}
+
+// Giro na mão: a força decide quanto e por quanto tempo gira; o prêmio é sorteado na hora que solta,
+// então ninguém consegue mirar uma fatia (e todas continuam com a mesma chance).
+function girarSolto(omega) {
+  const v = Math.min(Math.abs(omega), CONFIG.forca.maxima);
+  if (v < CONFIG.forca.minima) { definirEstado('parado'); acalmarPonteiro(); aviso('Gire com mais força'); return; }
+  const sentido = omega > 0 ? 1 : -1;
+  const { k, alvo } = sortearAlvo();
+  const tNatural = Math.min(9, 4.5 + v / 320); // segundos: mais força, mais tempo girando
+  const D = distanciaAte(alvo, sentido, Math.max(360 * CONFIG.forca.voltasMinimas, v * tNatural / 3));
+  definirEstado('girando');
+  animar(angulo, angulo + sentido * D, 3 * D / v * 1000, curvaSolta, () => parou(k)); // 3D/v: começa na velocidade da mão
+}
+
+function parou(k) {
+  vencedor = k;
+  definirEstado('resultado');
+  travadoAte = performance.now() + CONFIG.segurarResultado * 1000;
+  const g = document.querySelector(`.fatia[data-i="${k}"]`);
+  g.classList.add('vencedora');
+  g.parentNode.appendChild(g); // por cima das vizinhas, pro contorno aparecer inteiro
+  fanfarra();
+  const giro = registrar(P[k]);
+  setTimeout(() => { if (estado === 'resultado' && vencedor === k) abrirCartao(P[k], giro); }, 900);
+}
+
+function limpar() {
+  $('#resultado').classList.remove('aberto');
+  pedacos = [];
+  document.querySelectorAll('.fatia.vencedora').forEach(f => f.classList.remove('vencedora'));
+  vencedor = -1;
+  definirEstado('parado');
+  travadoAte = performance.now() + 600;
+}
+
+// ---------- clique, toque e arrasto ----------
+function acao() {
+  if (painelAberto()) return;
+  if (performance.now() < travadoAte) return;
+  if (estado === 'girando' || estado === 'arrastando') return;
+  usou = true;
+  ligarAudio();
+  manterTelaAcesa();
+  if (estado === 'parado') girarClique();
+  else if (estado === 'resultado') limpar();
+}
+
+let telaCheiaFalhou = false;
+function emTelaCheia() {
+  return !!document.fullscreenElement || (Math.abs(innerHeight - screen.height) < 2 && Math.abs(innerWidth - screen.width) < 2);
+}
+function pedirTelaCheia() { // 1º toque fora da tela cheia só liga a tela cheia
+  if (JANELA || telaCheiaFalhou || !document.fullscreenEnabled || emTelaCheia()) return false;
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => { telaCheiaFalhou = true; });
+  return true;
+}
+function alternarTelaCheia() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => aviso('O navegador não abriu a tela cheia: use F11'));
+}
+
+function centroDaRoda() { const r = caixa.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, raio: r.width / 2 }; }
+function anguloDaMao(e) { const c = centroDaRoda(); return Math.atan2(e.clientY - c.y, e.clientX - c.x) * 180 / Math.PI; }
+
+let gesto = null; // { id, x0, y0, mao, arrastando, amostras: [{t, a}] }
+document.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  if (e.target.closest && e.target.closest('.controle')) return;
+  if (painelAberto()) return;
+  if (pedirTelaCheia()) return;
+  const c = centroDaRoda(), dist = Math.hypot(e.clientX - c.x, e.clientY - c.y) / c.raio;
+  if (estado === 'parado' && performance.now() >= travadoAte && dist <= 1 && dist >= .24) { // pegou na roda (fora do miolo)
+    gesto = { id: e.pointerId, x0: e.clientX, y0: e.clientY, mao: anguloDaMao(e), arrastando: false, amostras: [] };
+    try { caixa.setPointerCapture(e.pointerId); } catch (erro) {}
+    return;
+  }
+  acao();
+});
+caixa.addEventListener('pointermove', e => {
+  if (!gesto || e.pointerId !== gesto.id) return;
+  if (!gesto.arrastando) {
+    if (Math.hypot(e.clientX - gesto.x0, e.clientY - gesto.y0) < 8) return; // ainda é clique
+    gesto.arrastando = true;
+    usou = true;
+    ligarAudio();
+    manterTelaAcesa();
+    definirEstado('arrastando');
+    ponteiro.style.transition = 'none';
+  }
+  const mao = anguloDaMao(e), delta = mod(mao - gesto.mao + 180, 360) - 180;
+  gesto.mao = mao;
+  if (!delta) return;
+  aplicarAngulo(angulo + delta, delta > 0 ? 1 : -1); // a roda acompanha a mão
+  const agora = performance.now();
+  gesto.amostras.push({ t: agora, a: angulo });
+  while (gesto.amostras.length > 2 && agora - gesto.amostras[0].t > 150) gesto.amostras.shift();
+});
+function soltar(e) {
+  if (!gesto || e.pointerId !== gesto.id) return;
+  const g = gesto;
+  gesto = null;
+  if (!g.arrastando) { acao(); return; } // foi só um clique na roda
+  const am = g.amostras, ult = am[am.length - 1], prim = am[0];
+  // velocidade da mão nos últimos 150 ms; se parou antes de soltar, é zero
+  const omega = !ult || performance.now() - ult.t > 100 || ult.t === prim.t ? 0 : (ult.a - prim.a) / ((ult.t - prim.t) / 1000);
+  girarSolto(omega);
+}
+caixa.addEventListener('pointerup', soltar);
+caixa.addEventListener('pointercancel', e => {
+  if (!gesto || e.pointerId !== gesto.id) return;
+  const g = gesto;
+  gesto = null;
+  if (g.arrastando) { definirEstado('parado'); acalmarPonteiro(); }
+});
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('dragstart', e => e.preventDefault());
+
+const TECLAS_ACAO = new Set([' ', 'Enter', 'PageDown', 'PageUp', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp']);
+document.addEventListener('keydown', e => {
+  if (e.key === 'F5') { e.preventDefault(); return; } // passador de slide manda F5: não pode recarregar no meio da live
+  if (e.target.closest && e.target.closest('input')) { if (e.key === 'Escape') fecharPaineis(); return; }
+  if (TECLAS_ACAO.has(e.key)) { e.preventDefault(); if (!e.repeat && !pedirTelaCheia()) acao(); return; }
+  if (e.repeat) return;
+  switch (e.key) {
+    case 'm': case 'M': alternarSom(); break;
+    case 'f': case 'F': alternarTelaCheia(); break;
+    case 'h': case 'H': alternarPainel('historico'); break;
+    case 'g': case 'G': $('#guia').classList.toggle('visivel'); break;
+    case '+': case '=': mudarEscala(.01); break;
+    case '-': case '_': mudarEscala(-.01); break;
+    case '0': escala = 1; guardar.gravar('escala', 1); palco.style.setProperty('--escala', 1); aviso('Tamanho 100%'); break;
+    case '?': case '/': case 'F1': e.preventDefault(); alternarPainel('ajuda'); break;
+    case 'Escape': fecharPaineis(); break;
+  }
+});
+
+let escala = guardar.ler('escala', 1);
+function mudarEscala(d) {
+  escala = Math.min(1.1, Math.max(.8, +(escala + d).toFixed(2)));
+  guardar.gravar('escala', escala);
+  palco.style.setProperty('--escala', escala);
+  aviso(`Tamanho ${Math.round(escala * 100)}%`);
+}
+
+let timerAviso = 0;
+function aviso(txt) {
+  const a = $('#aviso');
+  a.textContent = txt;
+  a.classList.add('visivel');
+  clearTimeout(timerAviso);
+  timerAviso = setTimeout(() => a.classList.remove('visivel'), 1800);
+}
+
+// ---------- tela acesa e cursor escondido ----------
+let trava = null;
+async function manterTelaAcesa() {
+  try {
+    if ('wakeLock' in navigator && !trava && document.visibilityState === 'visible') {
+      trava = await navigator.wakeLock.request('screen');
+      trava.addEventListener('release', () => { trava = null; });
+    }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && usou) manterTelaAcesa(); });
+
+let timerCursor = 0;
+function mostrarCursor() {
+  document.body.classList.remove('sem-cursor');
+  clearTimeout(timerCursor);
+  timerCursor = setTimeout(() => { if (!painelAberto() && estado !== 'arrastando') document.body.classList.add('sem-cursor'); }, 1500);
+}
+document.addEventListener('pointermove', mostrarCursor);
+
+// ---------- som (gerado na hora, sem arquivo) ----------
+let audio = null, mestre = null, mudo = guardar.ler('mudo', false), ultimoTique = 0;
+function ligarAudio() {
+  try {
+    if (!audio) {
+      audio = new (window.AudioContext || window.webkitAudioContext)();
+      mestre = audio.createGain();
+      mestre.gain.value = .9;
+      mestre.connect(audio.destination);
+    }
+    if (audio.state === 'suspended') audio.resume();
+  } catch (e) {}
+}
+function tique() {
+  if (mudo || !audio) return;
+  const t = audio.currentTime;
+  if (t - ultimoTique < .016) return;
+  ultimoTique = t;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(1900, t);
+  o.frequency.exponentialRampToValueAtTime(700, t + .035);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(.32, t + .002);
+  g.gain.exponentialRampToValueAtTime(.0001, t + .05);
+  o.connect(g); g.connect(mestre);
+  o.start(t); o.stop(t + .06);
+}
+function nota(f, t, dur, vol) {
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = 'triangle';
+  o.frequency.value = f;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + .015);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(mestre);
+  o.start(t); o.stop(t + dur + .05);
+}
+function fanfarra() {
+  if (mudo || !audio) return;
+  const t = audio.currentTime + .02, acorde = [523.25, 659.25, 783.99, 1046.5];
+  acorde.forEach((f, i) => nota(f, t + i * .1, .5, .22));
+  acorde.forEach(f => nota(f, t + .42, 1.5, .1));
+}
+function atualizarBotaoSom() { $('#som').classList.toggle('mudo', mudo); }
+function alternarSom() {
+  mudo = !mudo;
+  guardar.gravar('mudo', mudo);
+  atualizarBotaoSom();
+  aviso(mudo ? 'Som desligado' : 'Som ligado');
+  if (!mudo) { ligarAudio(); tique(); }
+}
+$('#som').addEventListener('click', alternarSom);
+
+// ---------- resultado ----------
+// Quebra o nome em 1 a 3 linhas e fica com a combinação de letra maior (cada linha a mais custa um pouco).
+// O ~ no nome gruda palavras que não podem ir pra linhas diferentes (Pré~e~Pós).
+function encaixar(texto, largMax, tamMax, tamMin) {
+  const palavras = texto.split(' ');
+  const juntar = (a, b) => palavras.slice(a, b).join(' ').replace(/~/g, ' ');
+  const opcoes = [[juntar(0, palavras.length)]];
+  for (let i = 1; i < palavras.length; i++) {
+    opcoes.push([juntar(0, i), juntar(i, palavras.length)]);
+    for (let j = i + 1; j < palavras.length; j++) opcoes.push([juntar(0, i), juntar(i, j), juntar(j, palavras.length)]);
+  }
+  let melhor = null;
+  for (const linhas of opcoes) {
+    const porPx = Math.max(...linhas.map(l => medir(l, 900, 100, 0) / 100));
+    const tam = Math.max(tamMin, Math.min(tamMax, Math.floor(largMax / porPx)));
+    const nota = tam - tamMax * .07 * (linhas.length - 1);
+    if (!melhor || nota > melhor.nota) melhor = { tam, linhas, nota };
+  }
+  return melhor;
+}
+const nomeLimpo = p => p.nome.replace(/~/g, ' ');
+
+function abrirCartao(p, giro) {
+  const res = $('#resultado'), cartao = res.querySelector('.cartao'), box = $('#premio');
+  $('#rotulo').textContent = CONFIG.rotuloResultado;
+  const est = getComputedStyle(cartao);
+  const W = cartao.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
+  const Hv = palco.clientHeight;
+  box.textContent = '';
+  const linha = (txt, cls, tam) => { const s = document.createElement('span'); s.className = `linha ${cls || ''}`; s.textContent = txt; s.style.fontSize = `${tam}px`; box.appendChild(s); };
+  if (p.tipo === 'desconto') {
+    const pct = Math.min(W * .2, Hv * .3);
+    linha(p.destaque, 'pct', pct);
+    linha('DE DESCONTO', 'sub', Math.min(pct * .36, W * .95 / (medir('DE DESCONTO', 900, 100, 0) / 100)));
+  } else {
+    const { tam, linhas } = encaixar(p.nome.toUpperCase(), W, Math.min(W * .13, Hv * .17), Math.min(W * .05, Hv * .06));
+    linhas.forEach(l => linha(l, '', tam));
+  }
+  $('#cupom').classList.toggle('ativo', !!p.cupom);
+  $('#cupom-codigo').textContent = p.cupom || '';
+  $('#cupom-codigo').style.fontSize = `${Math.min(W * .062, Hv * .075)}px`;
+  $('#rodape').textContent = `GIRO ${giro.n} · ${giro.hora.slice(0, 5)}`;
+  res.classList.add('aberto');
+  confete();
+}
+
+// ---------- confete ----------
+const cv = $('#confete'), cc = cv.getContext('2d');
+let pedacos = [], rodandoConfete = false, LW = 0, LH = 0;
+function medirConfete() {
+  const dpr = window.devicePixelRatio || 1;
+  LW = cv.clientWidth; LH = cv.clientHeight;
+  cv.width = Math.round(LW * dpr); cv.height = Math.round(LH * dpr);
+  cc.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function confete() {
+  medirConfete();
+  const cores = ['#00A341', '#C9A063', '#1A1A1A', '#8ED1A8', '#E3C68F'], base = Math.min(LW, LH);
+  for (let i = 0; i < 150; i++) {
+    const esq = i % 2 === 0;
+    pedacos.push({
+      x: esq ? -10 : LW + 10, y: LH * (.7 + aleatorio() * .28),
+      vx: (esq ? 1 : -1) * LW * (.004 + aleatorio() * .007), vy: -LH * (.014 + aleatorio() * .012), g: LH * .00034,
+      w: base * (.008 + aleatorio() * .008), h: base * (.005 + aleatorio() * .006), r: aleatorio() * 6.28, vr: (aleatorio() - .5) * .35,
+      cor: cores[Math.floor(aleatorio() * cores.length)], vida: 0,
+    });
+  }
+  if (!rodandoConfete) { rodandoConfete = true; requestAnimationFrame(desenharConfete); }
+}
+function desenharConfete() {
+  cc.clearRect(0, 0, LW, LH);
+  pedacos = pedacos.filter(p => p.y < LH + 60 && p.vida < 420);
+  for (const p of pedacos) {
+    p.vida++;
+    p.vx *= .985;
+    p.vy = p.vy * .985 + p.g;
+    p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    cc.save();
+    cc.translate(p.x, p.y);
+    cc.rotate(p.r);
+    cc.scale(1, Math.cos(p.vida * .12));
+    cc.fillStyle = p.cor;
+    cc.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    cc.restore();
+  }
+  if (pedacos.length) requestAnimationFrame(desenharConfete);
+  else { rodandoConfete = false; cc.clearRect(0, 0, LW, LH); }
+}
+
+// ---------- registro dos giros ----------
+function registrar(p) {
+  const agora = new Date();
+  const dia = agora.toLocaleDateString('pt-BR'), hora = agora.toLocaleTimeString('pt-BR');
+  const giro = { n: giros.filter(g => g.dia === dia).length + 1, dia, hora, premio: nomeLimpo(p), tipo: p.tipo, cupom: p.cupom || '', ganhador: '' };
+  giros.push(giro);
+  salvarGiros();
+  return giro;
+}
+
+function montarHistorico() {
+  const corpo = $('#lista-giros');
+  corpo.textContent = '';
+  if (!giros.length) {
+    const tr = document.createElement('tr'), td = document.createElement('td');
+    td.colSpan = 5; td.className = 'vazio'; td.textContent = 'Nenhum giro ainda.';
+    tr.appendChild(td); corpo.appendChild(tr);
+    return;
+  }
+  giros.slice().reverse().forEach(g => {
+    const tr = document.createElement('tr');
+    [`#${g.n}`, g.dia, g.hora, g.premio].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    const td = document.createElement('td'), inp = document.createElement('input');
+    inp.value = g.ganhador || '';
+    inp.placeholder = 'nome, @ ou telefone';
+    inp.addEventListener('input', () => { g.ganhador = inp.value; salvarGiros(); });
+    td.appendChild(inp); tr.appendChild(td);
+    corpo.appendChild(tr);
+  });
+}
+
+function baixarPlanilha() {
+  const linhas = [['Giro', 'Data', 'Hora', 'Prêmio', 'Tipo', 'Cupom', 'Ganhador'],
+    ...giros.map(g => [g.n, g.dia, g.hora, g.premio, g.tipo, g.cupom, g.ganhador])];
+  const csv = '﻿' + linhas.map(l => l.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `noue-da-sorte-giros-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+let confirmaApagar = 0;
+$('#btn-baixar').addEventListener('click', baixarPlanilha);
+$('#btn-fechar-historico').addEventListener('click', fecharPaineis);
+$('#btn-apagar').addEventListener('click', e => {
+  const btn = e.currentTarget;
+  if (Date.now() - confirmaApagar < 4000) {
+    if (giros.length) baixarPlanilha(); // rede de segurança: baixa antes de apagar
+    giros = []; salvarGiros(); montarHistorico();
+    confirmaApagar = 0; btn.textContent = 'Apagar histórico';
+    aviso('Histórico apagado (a planilha foi baixada antes)');
+  } else {
+    confirmaApagar = Date.now(); btn.textContent = 'Clique de novo pra apagar';
+    setTimeout(() => { if (Date.now() - confirmaApagar >= 4000) btn.textContent = 'Apagar histórico'; }, 4100);
+  }
+});
+
+// ---------- painéis (histórico e ajuda) ----------
+function painelAberto() { return !!document.querySelector('.painel.aberto'); }
+function fecharPaineis() { document.querySelectorAll('.painel.aberto').forEach(p => p.classList.remove('aberto')); }
+function alternarPainel(id) {
+  const p = $(`#${id}`), abrir = !p.classList.contains('aberto');
+  fecharPaineis();
+  if (!abrir) return;
+  if (id === 'historico') montarHistorico();
+  p.classList.add('aberto');
+  mostrarCursor();
+}
+
+// ---------- início ----------
+async function iniciar() {
+  palco.style.setProperty('--escala', escala);
+  $('#suspense-texto').textContent = CONFIG.suspense;
+  try { await Promise.all(['900 40px Satoshi', '700 24px Satoshi', '500 24px Satoshi'].map(f => document.fonts.load(f))); } catch (e) {}
+  montarRoda();
+  aplicarAngulo(angulo, 1);
+  acalmarPonteiro();
+  definirEstado('parado');
+  atualizarBotaoSom();
+  mostrarCursor();
+  document.body.classList.add('pronto');
+}
+iniciar();
+})();
+</script>
+</body>
+</html>
