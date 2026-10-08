@@ -256,21 +256,23 @@ const CONFIG = {
   // com 12 produtos e 2 descontos, sai desconto em 1 a cada 13 giros (Luan, 07/10: brinde é mais fácil que desconto)
   // topo = linha pequena da fatia · destaque = linha grande · nome = o que aparece no resultado
   // cupom = código mostrado no resultado (vazio = não mostra) · ~ no nome = não quebrar a linha ali
+  // 08/10 (Luan): "produtos mais coringas, tipo shampoos, máscara Regenér, perfumes" + "+1 Camuflage Touch". Saíram os 6
+  // tonalizantes (cada um serve só pra um tom); nomes conferidos na Shopify em 08/10.
   premios: [
     { tipo: 'desconto', topo: 'DESCONTO',     destaque: '15%',       nome: '15% de desconto', cupom: '', peso: 0.5 },
     { tipo: 'produto',  topo: 'SÉRUM MELANO', destaque: 'REATIV 3%', nome: 'Sérum Melano-Reativ~3%' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'MEDIUM',    nome: 'Camuflage Medium' },
+    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'REGENÉR',   nome: 'Shampoo Nutritivo~Regenér' },
     { tipo: 'produto',  topo: 'MÁSCARA',      destaque: 'CAMUFLAGE', nome: 'Máscara Camuflage' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'LIGHT',     nome: 'Camuflage Light' },
+    { tipo: 'produto',  topo: 'PERFUME',      destaque: 'REGENÉR',   nome: 'Perfume Regenér' },
     { tipo: 'produto',  topo: 'SÉRUM',        destaque: 'GHK-CU',    nome: 'Sérum GHK-Cu' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'PÉROLA',    nome: 'Camuflage Pérola' },
+    { tipo: 'produto',  topo: 'MÁSCARA',      destaque: 'REGENÉR',   nome: 'Máscara Nutrição~Regenér' },
     { tipo: 'desconto', topo: 'DESCONTO',     destaque: '20%',       nome: '20% de desconto', cupom: '', peso: 0.5 },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'TOUCH',     nome: 'Camuflage Touch' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'SILVER',    nome: 'Camuflage Silver' },
+    { tipo: 'produto',  topo: '+1 CAMUFLAGE', destaque: 'TOUCH',     nome: '+1 Camuflage Touch' },
+    { tipo: 'produto',  topo: 'HAIR PERFUME', destaque: 'FORTIFYE',  nome: 'Hair Perfume Fortifye' },
     { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'PRÉ E PÓS', nome: 'Shampoo Pré~e~Pós Camuflage' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'GRAY',      nome: 'Camuflage Gray' },
+    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'FORTIFYE',  nome: 'Shampoo Fortifye' },
     { tipo: 'produto',  topo: 'KIT NUTRIÇÃO', destaque: 'REGENÉR',   nome: 'Kit Nutrição Regenér' },
-    { tipo: 'produto',  topo: 'CAMUFLAGE',    destaque: 'COPPER',    nome: 'Camuflage Copper' },
+    { tipo: 'produto',  topo: 'LEAVE-IN',     destaque: 'FORTIFYE',  nome: 'Leave-in Fortifye' },
   ],
 };
 /* ========================================================================================== */
