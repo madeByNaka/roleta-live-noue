@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="pt-BR" data-tema="padrao">
+<html lang="pt-BR" data-tema="1010">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#FAF7F2">
-<title>Nouê da Sorte</title>
+<meta name="theme-color" content="#081634">
+<title>Nouê 10.10</title>
 <!--
   NOUÊ DA SORTE: roleta de palco das lives (08 e 09/10/2026).
   Arquivo único: fonte e logo vão embutidos, então roda SEM INTERNET depois de aberto.
@@ -205,7 +205,7 @@ html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--
 
   <div id="painel">
     <div id="logo-grande" role="img" aria-label="Nouê"></div>
-    <div id="titulo">da sorte</div>
+    <div id="titulo">10.10</div><div id="subtitulo">data dupla da Nouê</div>
     <div id="suspense"><span id="suspense-texto"></span><i>.</i><i>.</i><i>.</i></div>
   </div>
 
@@ -316,7 +316,7 @@ const palco = $('#palco'), caixa = $('#roda-caixa'), roda = $('#roda'), ponteiro
 const mod = (a, b) => ((a % b) + b) % b;
 
 // ---------- guardar no navegador (se falhar, segue só na memória) ----------
-const PREFIXO = 'noue-da-sorte:';
+const PREFIXO = 'noue-1010:';
 const guardar = {
   ler(k, padrao) { try { const v = localStorage.getItem(PREFIXO + k); return v === null ? padrao : JSON.parse(v); } catch (e) { return padrao; } },
   gravar(k, v) { try { localStorage.setItem(PREFIXO + k, JSON.stringify(v)); } catch (e) {} },
@@ -823,7 +823,7 @@ function baixarPlanilha() {
   const csv = '﻿' + linhas.map(l => l.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `noue-da-sorte-giros-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `noue-1010-giros-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }

@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="{{TEMA}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#FAF7F2">
-<title>Nouê da Sorte</title>
+<meta name="theme-color" content="{{COR_TEMA}}">
+<title>{{TITULO_PAGINA}}</title>
 <!--
   NOUÊ DA SORTE: roleta de palco das lives (08 e 09/10/2026).
   Arquivo único: fonte e logo vão embutidos, então roda SEM INTERNET depois de aberto.
@@ -40,6 +40,7 @@ body.sem-cursor,body.sem-cursor *{cursor:none!important}
 #painel{grid-area:painel;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
 #logo-grande{width:min(30vw,50vh);aspect-ratio:1220/488;background:var(--preto);-webkit-mask:var(--logo) center/contain no-repeat;mask:var(--logo) center/contain no-repeat}
 #titulo{font-weight:900;font-size:min(7.4vw,12vh);line-height:1;color:var(--verde);margin-top:1.6vh;letter-spacing:-.01em}
+#subtitulo{font-weight:700;font-size:min(3.4vw,5.6vh);line-height:1.1;color:#FFFFFF;margin-top:1.2vh;letter-spacing:.01em}
 #suspense{margin-top:5vh;min-height:1.3em;font-size:min(3.2vw,5.4vh);font-weight:700;color:var(--cinza);opacity:0;transform:translateY(.4em);transition:opacity .4s,transform .4s}
 body[data-estado="girando"] #suspense{opacity:1;transform:none}
 #suspense i{font-style:normal;animation:ponto 1.2s infinite}
@@ -48,6 +49,7 @@ body[data-estado="girando"] #suspense{opacity:1;transform:none}
 @media (max-aspect-ratio:6/5){
   #logo-grande{width:min(46vw,28vh)}
   #titulo{font-size:min(11vw,7vh);margin-top:1vh}
+  #subtitulo{font-size:min(5.6vw,3.4vh);margin-top:.6vh}
   #suspense{margin-top:1.4vh;font-size:min(5.4vw,3.2vh)}
 }
 
@@ -133,6 +135,29 @@ td input{width:100%;min-width:220px;font:500 clamp(12px,2vmin,24px) "Satoshi",sa
   background:var(--fundo);color:var(--preto);-webkit-user-select:text;user-select:text;touch-action:auto}
 #ajuda li{list-style:none;font-size:clamp(14px,2.6vmin,30px);padding:1.1vmin 0;border-bottom:1px solid #F1E9DD}
 #ajuda kbd{display:inline-block;min-width:2.2em;text-align:center;font:900 .8em "Satoshi",sans-serif;padding:.2em .5em;margin-right:.6em;border-radius:.4em;border:2px solid var(--preto)}
+
+/* ===== Tema 10.10 (live do sábado 10/10): azul-marinho, dourado e branco, como nos lançamentos ===== */
+html[data-tema="1010"]{--fundo:#081634;--fundo-borda:#040B1E;--nude:#0E2450;--linha:rgba(255,214,140,.38);
+  --verde:#FFD68C;--ouro:#FFD68C;--preto:#FFFFFF;--cinza:#C8D2E8}
+html[data-tema="1010"] body{background:radial-gradient(ellipse 80% 90% at 32% 50%,#14336F 0%,#081634 55%,#040B1E 100%)}
+html[data-tema="1010"] #logo-grande{background:#FFFFFF}
+html[data-tema="1010"] #titulo{color:#FFD68C;letter-spacing:.02em}
+html[data-tema="1010"] .fatia.branco .base{fill:#0E2450}
+html[data-tema="1010"] .fatia.nude .base{fill:#081634}
+html[data-tema="1010"] .fatia.branco .topo,html[data-tema="1010"] .fatia.nude .topo{fill:#FFD68C}
+html[data-tema="1010"] .fatia.branco .destaque,html[data-tema="1010"] .fatia.nude .destaque{fill:#FFFFFF}
+html[data-tema="1010"] .fatia.vencedora .realce{stroke:#FFD68C}
+html[data-tema="1010"] #miolo{background:#040B1E}
+html[data-tema="1010"] #miolo .logo{background:#FFD68C}
+html[data-tema="1010"] #ponteiro path{fill:#FFD68C;stroke:#B8913F}
+html[data-tema="1010"] #ponteiro circle{fill:#081634;stroke:#FFD68C}
+html[data-tema="1010"] #sombra{box-shadow:0 calc(var(--tam) * .035) calc(var(--tam) * .09) rgba(0,0,0,.5)}
+html[data-tema="1010"] #resultado{background:rgba(4,11,30,.84)}
+html[data-tema="1010"] .cartao{background:#0B1E4A;border-color:rgba(255,214,140,.55)}
+html[data-tema="1010"] #aviso{background:#FFD68C;color:#081634}
+html[data-tema="1010"] #som{background:#0E2450;color:#FFD68C;border-color:rgba(255,214,140,.5)}
+/* painéis de operação (histórico e ajuda) seguem claros, pra ler fácil */
+html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--linha:#E2D6C4;--cinza:#7A7065;color:#1A1A1A}
 </style>
 </head>
 <body data-estado="parado">
@@ -180,7 +205,7 @@ td input{width:100%;min-width:220px;font:500 clamp(12px,2vmin,24px) "Satoshi",sa
 
   <div id="painel">
     <div id="logo-grande" role="img" aria-label="Nouê"></div>
-    <div id="titulo">da sorte</div>
+    <div id="titulo">{{TITULO}}</div>{{SUBTITULO}}
     <div id="suspense"><span id="suspense-texto"></span><i>.</i><i>.</i><i>.</i></div>
   </div>
 
@@ -208,14 +233,14 @@ td input{width:100%;min-width:220px;font:500 clamp(12px,2vmin,24px) "Satoshi",sa
   <div id="historico" class="painel controle">
     <div class="caixa">
       <h2>Histórico de giros</h2>
-      <p class="dica">Fica salvo neste navegador. Anote o ganhador ao lado de cada giro e baixe a planilha no fim da live.</p>
+      <p class="dica">Fica salvo neste navegador. Anote o nome e o número do pedido de cada ganhadora e baixe a planilha no fim da live: ela vai pra expedição junto com os pedidos.</p>
       <div class="botoes">
         <button id="btn-baixar">Baixar planilha</button>
         <button id="btn-apagar" class="perigo">Apagar histórico</button>
         <button id="btn-fechar-historico">Fechar (H)</button>
       </div>
       <div class="rolagem">
-        <table><thead><tr><th>Giro</th><th>Data</th><th>Hora</th><th>Prêmio</th><th>Ganhador</th></tr></thead><tbody id="lista-giros"></tbody></table>
+        <table><thead><tr><th>Giro</th><th>Data</th><th>Hora</th><th>Prêmio</th><th>Nome</th><th>Nº do pedido</th></tr></thead><tbody id="lista-giros"></tbody></table>
       </div>
     </div>
   </div>
@@ -258,21 +283,18 @@ const CONFIG = {
   // cupom = código mostrado no resultado (vazio = não mostra) · ~ no nome = não quebrar a linha ali
   // 08/10 (Luan): "produtos mais coringas, tipo shampoos, máscara Regenér, perfumes" + "+1 Camuflage Touch". Saíram os 6
   // tonalizantes (cada um serve só pra um tom); nomes conferidos na Shopify em 08/10.
+  // 09/10 (task do Renier 1219355099720264): só produto UNITÁRIO de valor mais baixo, com estoque na TPL MG (lido em
+  // 09/10 ~12h30). Saíram kits, Camuflage, Melano, GHK-Cu, Touch, Máscaras e Fortifye (acima de R$ 109) e os 2 descontos
+  // (o 10.10 pede "sem porcentagem na roleta"). Necessaire e Escova Raquete são brinde: fatia menor (peso 0.5).
   premios: [
-    { tipo: 'desconto', topo: 'DESCONTO',     destaque: '15%',       nome: '15% de desconto', cupom: '', peso: 0.5 },
-    { tipo: 'produto',  topo: 'SÉRUM MELANO', destaque: 'REATIV 3%', nome: 'Sérum Melano-Reativ~3%' },
-    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'REGENÉR',   nome: 'Shampoo Nutritivo~Regenér' },
-    { tipo: 'produto',  topo: 'MÁSCARA',      destaque: 'CAMUFLAGE', nome: 'Máscara Camuflage' },
-    { tipo: 'produto',  topo: 'PERFUME',      destaque: 'REGENÉR',   nome: 'Perfume Regenér' },
-    { tipo: 'produto',  topo: 'SÉRUM',        destaque: 'GHK-CU',    nome: 'Sérum GHK-Cu' },
-    { tipo: 'produto',  topo: 'MÁSCARA',      destaque: 'REGENÉR',   nome: 'Máscara Nutrição~Regenér' },
-    { tipo: 'desconto', topo: 'DESCONTO',     destaque: '20%',       nome: '20% de desconto', cupom: '', peso: 0.5 },
-    { tipo: 'produto',  topo: '+1 CAMUFLAGE', destaque: 'TOUCH',     nome: '+1 Camuflage Touch' },
-    { tipo: 'produto',  topo: 'HAIR PERFUME', destaque: 'FORTIFYE',  nome: 'Hair Perfume Fortifye' },
-    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'PRÉ E PÓS', nome: 'Shampoo Pré~e~Pós Camuflage' },
-    { tipo: 'produto',  topo: 'SHAMPOO',      destaque: 'FORTIFYE',  nome: 'Shampoo Fortifye' },
-    { tipo: 'produto',  topo: 'KIT NUTRIÇÃO', destaque: 'REGENÉR',   nome: 'Kit Nutrição Regenér' },
-    { tipo: 'produto',  topo: 'LEAVE-IN',     destaque: 'FORTIFYE',  nome: 'Leave-in Fortifye' },
+    { tipo: 'produto', topo: 'SHAMPOO',    destaque: 'PRÉ',       nome: 'Shampoo Pré~Camuflage 140ml' },
+    { tipo: 'produto', topo: 'ÓLEO',       destaque: 'REGENÉR',   nome: 'Óleo Nutritivo~Regenér 30ml' },
+    { tipo: 'produto', topo: 'NECESSAIRE', destaque: 'NOUÊ',      nome: 'Necessaire~Exclusiva Nouê', peso: 0.5 },
+    { tipo: 'produto', topo: 'SHAMPOO',    destaque: 'SILVERY',   nome: 'Shampoo Silvery~250ml' },
+    { tipo: 'produto', topo: 'SHAMPOO',    destaque: 'PÓS',       nome: 'Shampoo Pós~Camuflage 140ml' },
+    { tipo: 'produto', topo: 'PERFUME',    destaque: 'REGENÉR',   nome: 'Perfume Regenér~50ml' },
+    { tipo: 'produto', topo: 'ESCOVA',     destaque: 'RAQUETE',   nome: 'Escova Raquete~Nouê', peso: 0.5 },
+    { tipo: 'produto', topo: 'SHAMPOO',    destaque: 'REGENÉR',   nome: 'Shampoo Nutritivo~Regenér 250ml' },
   ],
 };
 /* ========================================================================================== */
@@ -294,7 +316,7 @@ const palco = $('#palco'), caixa = $('#roda-caixa'), roda = $('#roda'), ponteiro
 const mod = (a, b) => ((a % b) + b) % b;
 
 // ---------- guardar no navegador (se falhar, segue só na memória) ----------
-const PREFIXO = 'noue-da-sorte:';
+const PREFIXO = '{{PREFIXO}}';
 const guardar = {
   ler(k, padrao) { try { const v = localStorage.getItem(PREFIXO + k); return v === null ? padrao : JSON.parse(v); } catch (e) { return padrao; } },
   gravar(k, v) { try { localStorage.setItem(PREFIXO + k, JSON.stringify(v)); } catch (e) {} },
@@ -776,29 +798,32 @@ function montarHistorico() {
   corpo.textContent = '';
   if (!giros.length) {
     const tr = document.createElement('tr'), td = document.createElement('td');
-    td.colSpan = 5; td.className = 'vazio'; td.textContent = 'Nenhum giro ainda.';
+    td.colSpan = 6; td.className = 'vazio'; td.textContent = 'Nenhum giro ainda.';
     tr.appendChild(td); corpo.appendChild(tr);
     return;
   }
   giros.slice().reverse().forEach(g => {
     const tr = document.createElement('tr');
     [`#${g.n}`, g.dia, g.hora, g.premio].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
-    const td = document.createElement('td'), inp = document.createElement('input');
-    inp.value = g.ganhador || '';
-    inp.placeholder = 'nome, @ ou telefone';
-    inp.addEventListener('input', () => { g.ganhador = inp.value; salvarGiros(); });
-    td.appendChild(inp); tr.appendChild(td);
+    [['nome', 'nome da ganhadora'], ['pedido', 'nº do pedido']].forEach(([campo, dica]) => {
+      const td = document.createElement('td'), inp = document.createElement('input');
+      inp.value = (campo === 'nome' ? (g.nome ?? g.ganhador) : g[campo]) || '';   // giros antigos guardavam em "ganhador"
+      inp.placeholder = dica;
+      if (campo === 'pedido') inp.inputMode = 'numeric';
+      inp.addEventListener('input', () => { g[campo] = inp.value; salvarGiros(); });
+      td.appendChild(inp); tr.appendChild(td);
+    });
     corpo.appendChild(tr);
   });
 }
 
 function baixarPlanilha() {
-  const linhas = [['Giro', 'Data', 'Hora', 'Prêmio', 'Tipo', 'Cupom', 'Ganhador'],
-    ...giros.map(g => [g.n, g.dia, g.hora, g.premio, g.tipo, g.cupom, g.ganhador])];
+  const linhas = [['Giro', 'Data', 'Hora', 'Prêmio', 'Nome', 'Nº do pedido'],
+    ...giros.map(g => [g.n, g.dia, g.hora, g.premio, g.nome ?? g.ganhador, g.pedido])];
   const csv = '﻿' + linhas.map(l => l.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `noue-da-sorte-giros-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `{{ARQUIVO}}-giros-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }

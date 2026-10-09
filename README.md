@@ -3,6 +3,20 @@
 Roleta pra projetar na TV nas lives de lançamento (Melano-Reativ 3% e Camuflage Touch, 08 e 09/10/2026).
 **Página separada** da roleta de captação do site: outro endereço, sem banco, sem cupom ROLETA10.
 
+## Duas roletas, um código (09/10/2026)
+
+| Link | Pra quê |
+|---|---|
+| `index.html` · https://madebynaka.github.io/roleta-live-noue/ | Nouê da Sorte (visual do site): live do Melano, sexta 09/10 |
+| `1010/index.html` · https://madebynaka.github.io/roleta-live-noue/1010/ | 10.10 · data dupla da Nouê (azul-marinho e dourado): live de sábado 10/10 |
+
+Mesmos prêmios e mesma regra; muda só o visual. Cada uma guarda o histórico separado no navegador.
+Prêmios (task do Renier 1219355099720264): só produto unitário de valor mais baixo, com estoque na TPL MG, e os brindes
+Necessaire e Escova Raquete em fatia menor. Sem desconto e sem porcentagem.
+
+**Quem ganhou o quê:** tecla **H** → em cada giro, preencher **nome** e **nº do pedido** → no fim da live,
+**Baixar planilha** (giro, data, hora, prêmio, nome, pedido). A planilha vai pra expedição junto com os pedidos.
+
 ## Na noite da live
 
 1. Abra o `index.html` no Chrome do notebook ligado na TV (duplo clique no arquivo; funciona **sem internet**).
