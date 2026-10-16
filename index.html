@@ -133,6 +133,26 @@ td{padding:.9vmin 1vmin;border-bottom:1px solid #F1E9DD;white-space:nowrap}
 td.vazio{color:var(--cinza);padding:3vmin 1vmin}
 td input{width:100%;min-width:220px;font:500 clamp(12px,2vmin,24px) "Satoshi",sans-serif;padding:.8vmin 1.2vmin;border-radius:1vmin;border:1px solid var(--linha);
   background:var(--fundo);color:var(--preto);-webkit-user-select:text;user-select:text;touch-action:auto}
+/* Faixas por valor de pedido (live de 17/10/2026): legenda na tela + contador dos prêmios do pedido da vez.
+   Só aparece no tema que tem faixas no CONFIG (as outras roletas ficam como eram). */
+#faixas{display:flex;flex-wrap:wrap;justify-content:center;gap:1.2vmin;margin-top:2.6vh;max-width:min(40vw,82vh)}
+#faixas:empty{display:none}
+.faixa{font-weight:500;font-size:min(2.2vw,3.7vh);padding:.5em 1em;border-radius:999px;border:1.5px solid var(--linha);background:rgba(255,255,255,.06);
+  white-space:nowrap;transition:transform .3s,background .3s,color .3s}
+.faixa b{font-weight:900;color:var(--verde)}
+.faixa.ativa{background:var(--verde);border-color:var(--verde);color:var(--fundo);transform:scale(1.07)}
+.faixa.ativa b{color:var(--fundo)}
+#lote{margin-top:2.4vh;min-height:1.2em;font-weight:900;letter-spacing:.12em;font-size:min(2.6vw,4.3vh);color:var(--verde);opacity:0;transition:opacity .3s}
+#lote.visivel{opacity:1}
+@media (max-aspect-ratio:6/5){
+  #faixas{max-width:92vw;margin-top:1.2vh}
+  .faixa{font-size:min(3.8vw,2.3vh)}
+  #lote{font-size:min(4.4vw,2.7vh);margin-top:1vh}
+}
+#pedido .caixa{width:min(92vw,1000px)}
+#pedido .campos{display:flex;flex-wrap:wrap;gap:1.4vmin;margin-bottom:2.2vmin}
+#pedido .campos input{flex:1;min-width:240px;font:500 clamp(14px,2.4vmin,28px) "Satoshi",sans-serif;padding:1.2vmin 1.6vmin;border-radius:1vmin;
+  border:1px solid var(--linha);background:var(--fundo);color:var(--preto);-webkit-user-select:text;user-select:text;touch-action:auto}
 #ajuda li{list-style:none;font-size:clamp(14px,2.6vmin,30px);padding:1.1vmin 0;border-bottom:1px solid #F1E9DD}
 #ajuda kbd{display:inline-block;min-width:2.2em;text-align:center;font:900 .8em "Satoshi",sans-serif;padding:.2em .5em;margin-right:.6em;border-radius:.4em;border:2px solid var(--preto)}
 
@@ -158,9 +178,84 @@ html[data-tema="1010"] #aviso{background:#FFD68C;color:#081634}
 html[data-tema="1010"] #som{background:#0E2450;color:#FFD68C;border-color:rgba(255,214,140,.5)}
 /* painéis de operação (histórico e ajuda) seguem claros, pra ler fácil */
 html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--linha:#E2D6C4;--cinza:#7A7065;color:#1A1A1A}
+
+/* ===== Tema live (live de 17/10/2026): a identidade da roleta da /pages/live (Luan: "segue essa id aqui"):
+   café #22150F, ouro da lata do Touch (#ECC250 / #C09D3A / #795609), cobre #A4481E e creme; aro dourado com lâmpadas
+   que piscam (correm no giro), "LIVE" no miolo, brilho atrás e a faixa animada cruzada no topo ===== */
+html[data-tema="live"]{--fundo:#22150F;--fundo-borda:#140C08;--nude:#2A1A12;--linha:rgba(236,194,80,.38);
+  --verde:#ECC250;--ouro:#ECC250;--preto:#FBF0DF;--cinza:#D9C3A0}
+html[data-tema="live"] body{background:radial-gradient(ellipse 70% 85% at 30% 54%,#4A2C17 0%,#2A190F 45%,#140C08 100%)}
+html[data-tema="live"] #palco{padding-top:calc(var(--margem) + 7vh);
+  --tam:min(calc(100vh - 2 * var(--margem) - 7vh),52vw);--tam:min(calc(100dvh - 2 * var(--margem) - 7vh),52vw)}
+@media (max-aspect-ratio:6/5){
+  html[data-tema="live"] #palco{padding-top:calc(var(--margem) + 5vh);
+    --tam:min(calc(100vw - 2 * var(--margem) - 14vw),calc(100vh - 2 * var(--margem) - 35vh));
+    --tam:min(calc(100vw - 2 * var(--margem) - 14vw),calc(100dvh - 2 * var(--margem) - 35vh))}
+}
+html[data-tema="live"] #logo-grande{background:#FBF0DF;width:min(24vw,34vh)}
+html[data-tema="live"] #titulo{color:#ECC250;letter-spacing:.02em;font-size:min(6.4vw,10vh)}
+html[data-tema="live"] #subtitulo{color:#FBF0DF;font-size:min(2.8vw,4.6vh)}
+/* painel mais baixo: com a fita no topo sobra menos altura e a roda não pode descer (16/10: cortava a base) */
+html[data-tema="live"] #faixas{margin-top:2vh;gap:1vmin}
+html[data-tema="live"] .faixa{font-size:min(2vw,3.3vh)}
+html[data-tema="live"] #lote{margin-top:1.8vh;font-size:min(2.4vw,3.9vh)}
+html[data-tema="live"] #suspense{margin-top:2.4vh}
+@media (max-aspect-ratio:6/5){
+  html[data-tema="live"] #logo-grande{width:min(40vw,22vh)}
+  html[data-tema="live"] #titulo{font-size:min(10vw,6vh)}
+  html[data-tema="live"] #subtitulo{font-size:min(5vw,2.9vh)}
+  html[data-tema="live"] .faixa{font-size:min(3.6vw,2.1vh)}
+}
+html[data-tema="live"] .fatia.creme .base{fill:#FBF0DF}
+html[data-tema="live"] .fatia.ouro .base{fill:url(#g-ouro)}
+html[data-tema="live"] .fatia.cafe .base{fill:#2A1A12}
+html[data-tema="live"] .fatia.cobre .base{fill:#A4481E}
+html[data-tema="live"] .fatia.creme .topo{fill:#A4481E}
+html[data-tema="live"] .fatia.creme .destaque{fill:#3A2214}
+html[data-tema="live"] .fatia.ouro .topo{fill:#6B4A12}
+html[data-tema="live"] .fatia.ouro .destaque{fill:#22150F}
+html[data-tema="live"] .fatia.cafe .topo{fill:#ECC250}
+html[data-tema="live"] .fatia.cafe .destaque{fill:#FBF0DF}
+html[data-tema="live"] .fatia.cobre .topo{fill:#F6D9A8}
+html[data-tema="live"] .fatia.cobre .destaque{fill:#FFF7EA}
+html[data-tema="live"] .fatia .apaga{fill:#140C08}
+html[data-tema="live"] .fatia.vencedora .realce{stroke:#FFE9A8}
+html[data-tema="live"] .raio{stroke:rgba(34,21,15,.5)}
+html[data-tema="live"] #g-aro stop:nth-child(1){stop-color:#F6DC8A}
+html[data-tema="live"] #g-aro stop:nth-child(2){stop-color:#ECC250}
+html[data-tema="live"] #g-aro stop:nth-child(3){stop-color:#8A5E14}
+html[data-tema="live"] #sombra{box-shadow:0 0 calc(var(--tam) * .14) rgba(236,194,80,.30),0 calc(var(--tam) * .035) calc(var(--tam) * .09) rgba(0,0,0,.55)}
+html[data-tema="live"] #miolo{background:radial-gradient(circle,#3A2416 0%,#22150F 72%);
+  box-shadow:0 0 0 calc(var(--tam) * .012) #ECC250,0 0 0 calc(var(--tam) * .018) #8A5E14,0 calc(var(--tam) * .01) calc(var(--tam) * .04) rgba(0,0,0,.45)}
+.miolo-texto{font-weight:900;color:#ECC250;font-size:calc(var(--tam) * .052);letter-spacing:.06em;padding-left:.06em}
+html[data-tema="live"] #ponteiro path{fill:#ECC250;stroke:#8A5E14}
+html[data-tema="live"] #ponteiro circle{fill:#22150F;stroke:#ECC250}
+html[data-tema="live"] #resultado{background:rgba(20,12,8,.84)}
+html[data-tema="live"] .cartao{background:#2A1A12;border-color:rgba(236,194,80,.6)}
+html[data-tema="live"] #aviso{background:#ECC250;color:#22150F}
+html[data-tema="live"] #som{background:#2A1A12;color:#ECC250;border-color:rgba(236,194,80,.5)}
+html[data-tema="live"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--linha:#E2D6C4;--cinza:#7A7065;color:#1A1A1A}
+html[data-tema="live"] .faixa{background:rgba(251,240,223,.06);border-color:rgba(236,194,80,.42)}
+html[data-tema="live"] .faixa.ativa{background:linear-gradient(90deg,#F2D27A,#C09D3A);border-color:#ECC250;color:#22150F}
+/* lâmpadas do aro: piscam alternadas; no giro correm rápido */
+.lampada{fill:#FFF3C4}
+html[data-tema="live"] .lampada{animation:piscar 1.4s ease-in-out infinite;filter:drop-shadow(0 0 5px rgba(255,233,168,.95))}
+html[data-tema="live"] .lampada.par{animation-delay:-.7s}
+body[data-estado="girando"] .lampada,body[data-estado="arrastando"] .lampada{animation-duration:.34s}
+@keyframes piscar{0%,100%{opacity:.28}50%{opacity:1}}
+/* faixa animada cruzada no topo (como a da página): ouro na frente, cobre atrás */
+#fita{position:absolute;left:-6vw;right:-6vw;top:calc(var(--margem) * .5);height:8vh;pointer-events:none;overflow:visible}
+#fita .banda{position:absolute;left:0;right:0;overflow:hidden;white-space:nowrap;font-weight:900;letter-spacing:.16em;font-size:min(2.3vh,1.3vw);padding:.85vh 0}
+#fita .atras{top:1.6vh;background:#A4481E;color:rgba(251,240,223,.75);transform:rotate(1.3deg)}
+#fita .frente{top:0;background:linear-gradient(90deg,#F2D27A,#E1B64C);color:#22150F;transform:rotate(-1.6deg);box-shadow:0 .6vh 1.6vh rgba(0,0,0,.35)}
+#fita .trilho{display:inline-block;animation:correr 38s linear infinite}
+#fita .atras .trilho{animation-direction:reverse;animation-duration:46s}
+@keyframes correr{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (max-aspect-ratio:6/5){#fita .banda{font-size:min(1.9vh,3vw)}}
 </style>
 </head>
 <body data-estado="parado">
+
 <div id="palco">
   <div id="roda-caixa" aria-label="Roleta: segure e gire, ou clique pra girar">
     <div id="sombra"></div>
@@ -175,6 +270,9 @@ html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--
           </radialGradient>
           <radialGradient id="g-verde" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
             <stop offset=".25" stop-color="#008A36"/><stop offset="1" stop-color="#00A341"/>
+          </radialGradient>
+          <radialGradient id="g-ouro" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="442">
+            <stop offset=".25" stop-color="#D9A53A"/><stop offset="1" stop-color="#F2CF6B"/>
           </radialGradient>
         </defs>
         <g id="fatias"></g>
@@ -206,6 +304,8 @@ html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--
   <div id="painel">
     <div id="logo-grande" role="img" aria-label="Nouê"></div>
     <div id="titulo">da sorte</div>
+    <div id="faixas"></div>
+    <div id="lote"></div>
     <div id="suspense"><span id="suspense-texto"></span><i>.</i><i>.</i><i>.</i></div>
   </div>
 
@@ -240,7 +340,22 @@ html[data-tema="1010"] .caixa{--fundo:#FAF7F2;--preto:#1A1A1A;--verde:#00A341;--
         <button id="btn-fechar-historico">Fechar (H)</button>
       </div>
       <div class="rolagem">
-        <table><thead><tr><th>Giro</th><th>Data</th><th>Hora</th><th>Prêmio</th><th>Nome</th><th>Nº do pedido</th></tr></thead><tbody id="lista-giros"></tbody></table>
+        <table><thead><tr><th>Giro</th><th>Data</th><th>Hora</th><th>Prêmio</th><th>Faixa</th><th>Nome</th><th>Nº do pedido</th></tr></thead><tbody id="lista-giros"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="pedido" class="painel controle">
+    <div class="caixa">
+      <h2 id="pedido-titulo">Faixa</h2>
+      <p class="dica">Nome e nº do pedido vão sozinhos pra planilha em cada prêmio desta faixa (pode deixar em branco e anotar depois no H). Na tela aparece só o primeiro nome.</p>
+      <div class="campos">
+        <input id="pedido-nome" placeholder="nome da ganhadora" autocomplete="off">
+        <input id="pedido-numero" placeholder="nº do pedido" inputmode="numeric" autocomplete="off">
+      </div>
+      <div class="botoes">
+        <button id="btn-comecar">Começar (Enter)</button>
+        <button id="btn-cancelar-pedido">Cancelar (Esc)</button>
       </div>
     </div>
   </div>
@@ -276,6 +391,9 @@ const CONFIG = {
     voltasMinimas: 1.5,
   },
   segurarResultado: 3,      // segundos em que o clique não limpa o resultado (protege do clique duplo)
+  // Faixas por valor de pedido (vem do build.py, por tema; [] = roleta sem faixas). Live de 17/10/2026, card do Luan:
+  // "R$ 350+ = 1 prêmio, R$ 500+ = 3 prêmios, R$ 1.000+ = 10 prêmios". Teclas 1, 2 e 3 abrem a faixa do pedido da vez.
+  faixas: [],
   // Ordem = ordem na roda (sentido horário).
   // peso = tamanho da fatia E chance de cair, à vista (sem peso = 1). Desconto 0.5 = metade da fatia e da chance:
   // com 12 produtos e 2 descontos, sai desconto em 1 a cada 13 giros (Luan, 07/10: brinde é mais fácil que desconto)
@@ -323,6 +441,9 @@ const guardar = {
 };
 let giros = guardar.ler('giros', []);
 const salvarGiros = () => guardar.gravar('giros', giros);
+// pedido da vez numa faixa: { i, rotulo, total, feitos, nome, pedido }. Fica salvo pra sobreviver a um recarregar.
+let lote = guardar.ler('lote', null);
+const salvarLote = () => guardar.gravar('lote', lote);
 
 // ---------- sorteio: o prêmio sai NO CLIQUE ou NA HORA QUE SOLTA; a animação só leva até ele ----------
 function aleatorio() { const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] / 4294967296; }
@@ -369,6 +490,18 @@ function ajustarRotulo(p, graus) {
   return sem.fd > com.fd * 1.25 ? sem : com;
 }
 
+const TEMA = document.documentElement.dataset.tema;
+// cor das fatias de produto, em ciclo: o tema live usa as 4 da roleta da /pages/live
+const CICLO = TEMA === 'live' ? ['creme', 'ouro', 'cafe', 'cobre'] : ['branco', 'nude'];
+function montarLampadas() {   // 20 lâmpadas no aro, só no tema live
+  if (TEMA !== 'live') return;
+  const g = el('g', { id: 'lampadas' }, $('#aro'));
+  for (let i = 0; i < 20; i++) {
+    const a = (i * 18 + 9) * Math.PI / 180;
+    el('circle', { cx: (456 * Math.cos(a)).toFixed(1), cy: (456 * Math.sin(a)).toFixed(1), r: 8.5, class: `lampada${i % 2 ? ' par' : ''}` }, g);
+  }
+}
+
 function montarRoda() {
   const g = $('#fatias');
   g.textContent = '';
@@ -377,7 +510,7 @@ function montarRoda() {
     const centro = CENTRO[i], R = R_FATIA + 2;
     const a0 = INICIO[i] * Math.PI / 180, a1 = (INICIO[i] + LARG[i]) * Math.PI / 180;
     const d = `M0 0L${(R * Math.cos(a0)).toFixed(2)} ${(R * Math.sin(a0)).toFixed(2)}A${R} ${R} 0 0 1 ${(R * Math.cos(a1)).toFixed(2)} ${(R * Math.sin(a1)).toFixed(2)}Z`;
-    const tema = p.tipo === 'desconto' ? 'verde' : (produtos++ % 2 === 0 ? 'branco' : 'nude');
+    const tema = p.tipo === 'desconto' ? 'verde' : CICLO[produtos++ % CICLO.length];
     const fatia = el('g', { class: `fatia ${tema}`, 'data-i': i }, g);
     el('path', { d, class: 'base' }, fatia);
     const r = ajustarRotulo(p, LARG[i]);
@@ -500,6 +633,8 @@ function limpar() {
   vencedor = -1;
   definirEstado('parado');
   travadoAte = performance.now() + 600;
+  if (lote && lote.feitos >= lote.total) encerrarLote('Prêmios da faixa completos');
+  else atualizarLote();
 }
 
 // ---------- clique, toque e arrasto ----------
@@ -599,7 +734,11 @@ document.addEventListener('keydown', e => {
     case '-': case '_': mudarEscala(-.01); break;
     case '0': escala = 1; guardar.gravar('escala', 1); palco.style.setProperty('--escala', 1); aviso('Tamanho 100%'); break;
     case '?': case '/': case 'F1': e.preventDefault(); alternarPainel('ajuda'); break;
-    case 'Escape': fecharPaineis(); break;
+    case '1': case '2': case '3': if (F.length) { e.preventDefault(); abrirPedido(+e.key - 1); } break;
+    case 'Escape':   // com painel aberto fecha o painel; sem painel, cancela o pedido da vez
+      if (painelAberto()) fecharPaineis();
+      else if (lote) encerrarLote(`Faixa cancelada (${lote.feitos} de ${lote.total} prêmios já sorteados)`);
+      break;
   }
 });
 
@@ -718,7 +857,8 @@ const nomeLimpo = p => p.nome.replace(/~/g, ' ');
 
 function abrirCartao(p, giro) {
   const res = $('#resultado'), cartao = res.querySelector('.cartao'), box = $('#premio');
-  $('#rotulo').textContent = CONFIG.rotuloResultado;
+  // pedido numa faixa com nome: "MARIA GANHOU" (só o primeiro nome vai pra tela)
+  $('#rotulo').textContent = primeiroNome(giro.nome) ? `${primeiroNome(giro.nome).toUpperCase()} GANHOU` : CONFIG.rotuloResultado;
   const est = getComputedStyle(cartao);
   const W = cartao.clientWidth - parseFloat(est.paddingLeft) - parseFloat(est.paddingRight);
   const Hv = palco.clientHeight;
@@ -735,7 +875,7 @@ function abrirCartao(p, giro) {
   $('#cupom').classList.toggle('ativo', !!p.cupom);
   $('#cupom-codigo').textContent = p.cupom || '';
   $('#cupom-codigo').style.fontSize = `${Math.min(W * .062, Hv * .075)}px`;
-  $('#rodape').textContent = `GIRO ${giro.n} · ${giro.hora.slice(0, 5)}`;
+  $('#rodape').textContent = (giro.parte ? `PRÊMIO ${giro.parte.replace('/', ' DE ')} · ` : '') + `GIRO ${giro.n} · ${giro.hora.slice(0, 5)}`;
   res.classList.add('aberto');
   confete();
 }
@@ -751,7 +891,8 @@ function medirConfete() {
 }
 function confete() {
   medirConfete();
-  const cores = ['#00A341', '#C9A063', '#1A1A1A', '#8ED1A8', '#E3C68F'], base = Math.min(LW, LH);
+  const cores = TEMA === 'live' ? ['#ECC250', '#C09D3A', '#A4481E', '#FBF0DF', '#F6D77A'] : ['#00A341', '#C9A063', '#1A1A1A', '#8ED1A8', '#E3C68F'];
+  const base = Math.min(LW, LH);
   for (let i = 0; i < 150; i++) {
     const esq = i % 2 === 0;
     pedacos.push({
@@ -788,9 +929,64 @@ function registrar(p) {
   const agora = new Date();
   const dia = agora.toLocaleDateString('pt-BR'), hora = agora.toLocaleTimeString('pt-BR');
   const giro = { n: giros.filter(g => g.dia === dia).length + 1, dia, hora, premio: nomeLimpo(p), tipo: p.tipo, cupom: p.cupom || '', ganhador: '' };
+  if (lote && lote.feitos < lote.total) {   // giro de um pedido numa faixa: nome e pedido já vão pra planilha
+    lote.feitos++;
+    Object.assign(giro, { faixa: lote.rotulo, parte: `${lote.feitos}/${lote.total}`, nome: lote.nome, pedido: lote.pedido });
+    salvarLote();
+    atualizarLote();
+  }
   giros.push(giro);
   salvarGiros();
   return giro;
+}
+
+// ---------- faixas por valor de pedido ----------
+const F = CONFIG.faixas || [];
+const primeiroNome = s => (s || '').trim().split(/\s+/)[0] || '';
+function montarFaixas() {
+  const box = $('#faixas');
+  box.textContent = '';
+  F.forEach((f, i) => {
+    const d = document.createElement('div'), b = document.createElement('b');
+    d.className = 'faixa'; d.dataset.i = i;
+    d.append(`${f.rotulo} = `);
+    b.textContent = `${f.premios} ${f.premios > 1 ? 'prêmios' : 'prêmio'}`;
+    d.appendChild(b); box.appendChild(d);
+  });
+}
+function atualizarLote() {
+  document.querySelectorAll('.faixa').forEach(d => d.classList.toggle('ativa', !!lote && +d.dataset.i === lote.i));
+  const box = $('#lote');
+  if (!lote) { box.classList.remove('visivel'); return; }
+  const quem = primeiroNome(lote.nome).toUpperCase();
+  // com o resultado na tela mostra o prêmio que acabou de sair; parada, o próximo a girar
+  const n = estado === 'resultado' ? lote.feitos : Math.min(lote.feitos + 1, lote.total);
+  const fim = lote.feitos >= lote.total && estado !== 'resultado';
+  box.textContent = (quem ? `${quem} · ` : '') + (fim ? `${lote.total} DE ${lote.total} ✓` : `PRÊMIO ${n} DE ${lote.total}`);
+  box.classList.add('visivel');
+}
+function abrirPedido(i) {
+  if (!F[i] || estado === 'girando' || estado === 'arrastando') return;
+  if (estado === 'resultado') limpar();
+  $('#pedido-titulo').textContent = `${F[i].rotulo} · ${F[i].premios} ${F[i].premios > 1 ? 'prêmios' : 'prêmio'}`;
+  $('#pedido').dataset.i = i;
+  $('#pedido-nome').value = ''; $('#pedido-numero').value = '';
+  alternarPainel('pedido');
+  $('#pedido-nome').focus();   // já na hora: no teste, com 30 ms de atraso, as primeiras letras caíam fora do campo
+  setTimeout(() => { if (!document.activeElement || !document.activeElement.closest('#pedido')) $('#pedido-nome').focus(); }, 30);
+}
+function comecarLote() {
+  const i = +$('#pedido').dataset.i;
+  if (!F[i]) return;
+  lote = { i, rotulo: F[i].rotulo, total: F[i].premios, feitos: 0, nome: $('#pedido-nome').value.trim(), pedido: $('#pedido-numero').value.trim() };
+  salvarLote();
+  fecharPaineis();
+  atualizarLote();
+  aviso(`${lote.rotulo}: ${lote.total} ${lote.total > 1 ? 'prêmios' : 'prêmio'}`);
+}
+function encerrarLote(msg) {
+  lote = null; salvarLote(); atualizarLote();
+  if (msg) aviso(msg);
 }
 
 function montarHistorico() {
@@ -798,13 +994,13 @@ function montarHistorico() {
   corpo.textContent = '';
   if (!giros.length) {
     const tr = document.createElement('tr'), td = document.createElement('td');
-    td.colSpan = 6; td.className = 'vazio'; td.textContent = 'Nenhum giro ainda.';
+    td.colSpan = 7; td.className = 'vazio'; td.textContent = 'Nenhum giro ainda.';
     tr.appendChild(td); corpo.appendChild(tr);
     return;
   }
   giros.slice().reverse().forEach(g => {
     const tr = document.createElement('tr');
-    [`#${g.n}`, g.dia, g.hora, g.premio].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    [`#${g.n}`, g.dia, g.hora, g.premio, g.faixa ? `${g.faixa} · ${g.parte}` : ''].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
     [['nome', 'nome da ganhadora'], ['pedido', 'nº do pedido']].forEach(([campo, dica]) => {
       const td = document.createElement('td'), inp = document.createElement('input');
       inp.value = (campo === 'nome' ? (g.nome ?? g.ganhador) : g[campo]) || '';   // giros antigos guardavam em "ganhador"
@@ -818,8 +1014,8 @@ function montarHistorico() {
 }
 
 function baixarPlanilha() {
-  const linhas = [['Giro', 'Data', 'Hora', 'Prêmio', 'Nome', 'Nº do pedido'],
-    ...giros.map(g => [g.n, g.dia, g.hora, g.premio, g.nome ?? g.ganhador, g.pedido])];
+  const linhas = [['Giro', 'Data', 'Hora', 'Prêmio', 'Faixa', 'Prêmio da faixa', 'Nome', 'Nº do pedido'],
+    ...giros.map(g => [g.n, g.dia, g.hora, g.premio, g.faixa, g.parte ? g.parte.replace('/', ' de ') : '', g.nome ?? g.ganhador, g.pedido])];
   const csv = '﻿' + linhas.map(l => l.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -827,6 +1023,10 @@ function baixarPlanilha() {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }
+
+$('#btn-comecar').addEventListener('click', comecarLote);
+$('#btn-cancelar-pedido').addEventListener('click', fecharPaineis);
+['#pedido-nome', '#pedido-numero'].forEach(s => $(s).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); comecarLote(); } }));
 
 let confirmaApagar = 0;
 $('#btn-baixar').addEventListener('click', baixarPlanilha);
@@ -862,6 +1062,9 @@ async function iniciar() {
   $('#suspense-texto').textContent = CONFIG.suspense;
   try { await Promise.all(['900 40px Satoshi', '700 24px Satoshi', '500 24px Satoshi'].map(f => document.fonts.load(f))); } catch (e) {}
   montarRoda();
+  montarLampadas();
+  montarFaixas();
+  atualizarLote();
   aplicarAngulo(angulo, 1);
   acalmarPonteiro();
   definirEstado('parado');

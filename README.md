@@ -11,6 +11,25 @@ Roleta pra projetar na TV nas lives de lançamento (Melano-Reativ 3% e Camuflage
 | `1010/index.html` · https://madebynaka.github.io/roleta-live-noue/1010/ | 10.10 · data dupla da Nouê (azul-marinho e dourado): live de sábado 10/10 |
 
 Mesmos prêmios e mesma regra; muda só o visual. Cada uma guarda o histórico separado no navegador.
+
+## Live de sábado 17/10/2026: roleta com faixas por valor de pedido
+
+| Link | Pra quê |
+|---|---|
+| `live/index.html` · https://madebynaka.github.io/roleta-live-noue/live/ | tema próprio com a identidade da roleta da `/pages/live` (Luan: "segue essa id aqui"): café, ouro da lata do Touch, cobre e creme, aro com 20 lâmpadas que piscam (rápido no giro), "LIVE" no miolo e a faixa animada no topo. "da sorte" + "roleta de prêmios da live" e as faixas do card do Luan: **R$ 350+ = 1 prêmio · R$ 500+ = 3 prêmios · R$ 1.000+ = 10 prêmios** |
+
+As 3 faixas aparecem na tela, embaixo do título. Pra cada pedido:
+1. Aperte **1**, **2** ou **3** (R$ 350+, R$ 500+, R$ 1.000+). Abre uma caixinha: digite o **nome** e o **nº do pedido**
+   (pode deixar em branco) e **Enter**.
+2. A faixa acende e a tela mostra **"MARIA · PRÊMIO 1 DE 3"**. Gire normalmente; o cartão diz **"MARIA GANHOU"** e
+   "PRÊMIO 1 DE 3" no rodapé. Clique pra limpar e gire o próximo.
+3. No último prêmio da faixa, ao limpar aparece "Prêmios da faixa completos" e ela volta ao normal.
+   **Esc** (sem nenhuma caixinha aberta) cancela a faixa no meio.
+
+Na tela vai só o primeiro nome. Nome, pedido, faixa e "prêmio X de Y" vão sozinhos pro histórico (**H**) e pra
+planilha. Giro sem faixa continua funcionando como antes (nome e pedido anotados depois no H).
+Prêmios: os mesmos do 10.10 (CONFIG em `src/roleta.html`). Testado em 16/10 (Chrome sem janela, 1600x900): 3 giros
+da faixa de R$ 500+, giro avulso, cancelar com Esc, histórico com a faixa; as outras 2 roletas sem faixa; 0 erro de JS.
 Prêmios (task do Renier 1219355099720264): só produto unitário de valor mais baixo, com estoque na TPL MG, e os brindes
 Necessaire e Escova Raquete em fatia menor. Sem desconto e sem porcentagem.
 
