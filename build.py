@@ -39,6 +39,14 @@ TEMAS = {
              'FAIXAS': json.dumps(FAIXAS_LIVE, ensure_ascii=False), 'AJUDA_FAIXAS': AJUDA_FAIXAS,
              'MIOLO': '<div class="miolo-texto">LIVE</div>', 'FITA': FITA_LIVE},
 }
+# 19/10: a roleta CONECTADA ao painel de giros da live (totaldash): mesma cara da live, sem as faixas manuais (quem
+# manda a compradora pra roleta é o celular da apresentadora, em /live) e com a vez lida do servidor. Este arquivo vai
+# pro noue-dashboard em public/live-roleta.html (mesma origem da API: o iPad entra com a senha da live em /live).
+TEMAS['conectada'] = {**TEMAS['live'], 'saida': 'conectada/index.html', 'TITULO_PAGINA': 'Nouê da Sorte · Live',
+                      'PREFIXO': 'noue-live-conectada:', 'ARQUIVO': 'noue-live-conectada', 'FAIXAS': '[]', 'AJUDA_FAIXAS': '',
+                      'CONECTADA': 'true'}
+for _t in TEMAS.values():
+    _t.setdefault('CONECTADA', 'false')
 
 
 def b64(nome):

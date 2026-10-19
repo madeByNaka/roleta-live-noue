@@ -381,6 +381,7 @@ body[data-estado="girando"] .lampada,body[data-estado="arrastando"] .lampada{ani
 <script>
 /* ===================== CONFIGURAÇÃO (o que muda de uma live pra outra) ===================== */
 const CONFIG = {
+  conectada: {{CONECTADA}},  // true = lê a vez do painel de giros da live (totaldash /api/live) e manda cada prêmio
   rotuloResultado: 'VOCÊ GANHOU',
   suspense: 'E o prêmio é',
   duracaoGiro: [7, 8.5],    // giro do clique: segundos (sorteia um valor nesse intervalo)
@@ -935,6 +936,7 @@ function registrar(p) {
     salvarLote();
     atualizarLote();
     avisarPainel(giro);
+    mandarPremio(giro);
   }
   giros.push(giro);
   salvarGiros();
@@ -961,6 +963,70 @@ function lotePainel() {
 function avisarPainel(giro) {
   if (!lote || !lote.compra || !lote.origem || !window.opener) return;
   try { window.opener.postMessage({ tipo: 'noue-live-premio', compra: lote.compra, giro: lote.feitos, premio: giro.premio }, lote.origem); } catch (e) {}
+}
+
+// ---------- modo conectado (19/10/2026) ----------
+// No iPad da live, servida pelo totaldash em /live-roleta.html: de 2 em 2 s lê quem a apresentadora mandou pra roleta
+// (/api/live/estado?roleta=1) e monta o lote com o nome e os giros dela. Cada prêmio vai pro servidor
+// (/api/live/premio) e, sem internet, fica numa fila no aparelho e sai sozinho quando a conexão volta. Mesma origem da
+// API: o iPad entra uma vez com a senha da live em /live.
+const filaPremios = guardar.ler('fila_premios', []);
+let semPainelDesde = 0, avisouSemPainel = false, precisaEntrar = false, esvaziando = false;
+function mandarPremio(giro) {
+  if (!CONFIG.conectada || !lote || !lote.conectada) return;
+  filaPremios.push({ compra: lote.compra, giro: lote.feitos, premio: giro.premio });
+  guardar.gravar('fila_premios', filaPremios);
+  esvaziarFila();
+}
+async function esvaziarFila() {
+  // UMA fila de envio por vez: com duas rodando juntas (o 1º envio demorou), as duas mandavam o prêmio 1 e cada uma
+  // tirava um item da fila, e o prêmio 2 sumia sem ir (achado no teste de 19/10)
+  if (esvaziando) return;
+  esvaziando = true;
+  try { await esvaziarUmPorUm(); } finally { esvaziando = false; }
+}
+async function esvaziarUmPorUm() {
+  while (filaPremios.length) {
+    const p = filaPremios[0];
+    try {
+      const r = await fetch('/api/live/premio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p), credentials: 'same-origin' });
+      if (r.status >= 500 || r.status === 401) return;          // tenta de novo na próxima volta
+      filaPremios.shift();                                       // 200 ou recusa definitiva (400): sai da fila
+      guardar.gravar('fila_premios', filaPremios);
+    } catch (e) { return; }
+  }
+}
+async function lerVez() {
+  try {
+    const r = await fetch('/api/live/estado?roleta=1&_=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' });
+    if (r.status === 401) { if (!precisaEntrar) { precisaEntrar = true; aviso('Entre na tela da live neste iPad: /live'); } return; }
+    precisaEntrar = false;
+    if (!r.ok) throw new Error(String(r.status));
+    const j = await r.json();
+    semPainelDesde = 0; avisouSemPainel = false;
+    const v = j.vez;
+    if (estado === 'girando' || estado === 'resultado') return; // nunca mexe no meio do giro nem com o cartão aberto
+    if (v && (!lote || lote.compra !== v.compra)) {
+      lote = { i: -1, rotulo: 'Live', total: v.giros, feitos: Math.min(v.girados, v.giros), nome: v.nome || '',
+               pedido: String(v.pedido || ''), compra: v.compra, conectada: true };
+      salvarLote(); atualizarLote();
+      aviso(`${primeiroNome(lote.nome) || 'Cliente'} na roleta: ${lote.total - lote.feitos} ${lote.total - lote.feitos > 1 ? 'giros' : 'giro'}`);
+    } else if (v && lote && lote.compra === v.compra && v.girados > lote.feitos) {
+      lote.feitos = Math.min(v.girados, lote.total); salvarLote(); atualizarLote();   // só sobe: outro aparelho girou
+    } else if (!v && lote && lote.conectada && !filaPremios.some(p => p.compra === lote.compra)) {
+      lote = null; salvarLote(); atualizarLote();               // a apresentadora tirou da roleta ou ela terminou
+    }
+  } catch (e) {
+    if (!semPainelDesde) semPainelDesde = Date.now();
+    if (!avisouSemPainel && Date.now() - semPainelDesde > 10000) { avisouSemPainel = true; aviso('Sem conexão com o painel da live'); }
+  } finally {
+    esvaziarFila();
+  }
+}
+function ligarConectada() {
+  if (!CONFIG.conectada) return;
+  lerVez();
+  setInterval(lerVez, 2000);
 }
 
 // ---------- faixas por valor de pedido ----------
@@ -1089,6 +1155,7 @@ async function iniciar() {
   montarFaixas();
   lotePainel();
   atualizarLote();
+  ligarConectada();
   aplicarAngulo(angulo, 1);
   acalmarPonteiro();
   definirEstado('parado');
