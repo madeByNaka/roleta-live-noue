@@ -934,10 +934,33 @@ function registrar(p) {
     Object.assign(giro, { faixa: lote.rotulo, parte: `${lote.feitos}/${lote.total}`, nome: lote.nome, pedido: lote.pedido });
     salvarLote();
     atualizarLote();
+    avisarPainel(giro);
   }
   giros.push(giro);
   salvarGiros();
   return giro;
+}
+
+// ---------- modo painel (19/10/2026) ----------
+// O painel de giros da live (totaldash /crm/live) abre esta página com ?painel=1&compra=ID&nome=&pedido=&giros=N&ja=K
+// &origem=<painel>. O lote nasce do link (sem digitar nada) e cada prêmio volta pro painel por postMessage, que anota
+// o giro na compra certa. Só manda pra origem conhecida: outra página que abrir a roleta não recebe nada.
+const ORIGENS_PAINEL = [/^https:\/\/totaldash\.nouecosmeticos\.com\.br$/, /^https:\/\/noue-dashboard[a-z0-9-]*\.vercel\.app$/,
+                        /^http:\/\/localhost:(3000|3222)$/];
+function lotePainel() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('painel') !== '1') return;
+  const origem = q.get('origem') || '', compra = +q.get('compra'), total = +q.get('giros'), ja = +q.get('ja') || 0;
+  if (!ORIGENS_PAINEL.some(r => r.test(origem)) || !compra || !(total > 0)) { aviso('Link do painel inválido'); return; }
+  lote = { i: -1, rotulo: 'Live', total, feitos: Math.min(ja, total), nome: (q.get('nome') || '').slice(0, 60),
+           pedido: (q.get('pedido') || '').slice(0, 20), compra, origem };
+  salvarLote();
+  history.replaceState(null, '', location.pathname);   // F5 não recomeça o lote do zero
+  aviso(lote.feitos >= lote.total ? 'Esse pedido já girou tudo' : `${primeiroNome(lote.nome) || 'Cliente'}: ${lote.total - lote.feitos} ${lote.total - lote.feitos > 1 ? 'giros' : 'giro'}`);
+}
+function avisarPainel(giro) {
+  if (!lote || !lote.compra || !lote.origem || !window.opener) return;
+  try { window.opener.postMessage({ tipo: 'noue-live-premio', compra: lote.compra, giro: lote.feitos, premio: giro.premio }, lote.origem); } catch (e) {}
 }
 
 // ---------- faixas por valor de pedido ----------
@@ -1064,6 +1087,7 @@ async function iniciar() {
   montarRoda();
   montarLampadas();
   montarFaixas();
+  lotePainel();
   atualizarLote();
   aplicarAngulo(angulo, 1);
   acalmarPonteiro();
