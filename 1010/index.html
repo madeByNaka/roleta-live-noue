@@ -1004,6 +1004,7 @@ async function lerVez() {
     if (!r.ok) throw new Error(String(r.status));
     const j = await r.json();
     semPainelDesde = 0; avisouSemPainel = false;
+    if (j.live) acertarFita(j.live.faixas);
     const v = j.vez;
     if (estado === 'girando' || estado === 'resultado') return; // nunca mexe no meio do giro nem com o cartão aberto
     if (v && (!lote || lote.compra !== v.compra)) {
@@ -1022,6 +1023,19 @@ async function lerVez() {
   } finally {
     esvaziarFila();
   }
+}
+// Faixa do topo com as faixas DA LIVE (20/10/2026): o texto fixo do build dizia "R$ 500+ = 3 prêmios" e o painel dava 2
+// giros. Agora o iPad escreve a faixa com o que está cadastrado na live, que é o mesmo que conta os giros (lib/live.ts).
+let fitaAtual = '';
+function acertarFita(faixas) {
+  const boas = (Array.isArray(faixas) ? faixas : []).filter(f => +f.min > 0 && +f.giros >= 1).sort((a, b) => a.min - b.min);
+  if (!boas.length) return;
+  const partes = ['ROLETA DE PRÊMIOS DA LIVE',
+    ...boas.map(f => `R$ ${Number(f.min).toLocaleString('pt-BR')}+ = ${f.giros} ${f.giros > 1 ? 'PRÊMIOS' : 'PRÊMIO'}`)];
+  const texto = Array(4).fill(partes.join(' · ')).join(' · ') + ' · ';
+  if (texto === fitaAtual) return;   // só mexe quando muda: reescrever a cada 2 s faria a faixa pular
+  fitaAtual = texto;
+  document.querySelectorAll('#fita .trilho').forEach(t => { t.textContent = texto + texto; });
 }
 function ligarConectada() {
   if (!CONFIG.conectada) return;

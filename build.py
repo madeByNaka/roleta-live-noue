@@ -6,7 +6,8 @@ Uma fonte só (src/roleta.html), três temas:
   live/index.html   live de sábado 17/10/2026 (pedido do Luan: "duplicar aquela e adaptar com as condições do anexo",
                     depois "segue essa id aqui" = a roleta da /pages/live): visual café, ouro e cobre com lâmpadas no
                     aro, "LIVE" no miolo, faixa animada no topo e as FAIXAS por valor de pedido (R$ 350+ = 1 prêmio,
-                    R$ 500+ = 3, R$ 1.000+ = 10) na tela, com contador do pedido da vez
+                    R$ 500+ = 2, R$ 1.000+ = 10; era 3 na live de 17/10, o Luan fixou 2 em 20/10) na tela, com contador
+                    do pedido da vez. No tema conectada a faixa do topo vem da própria live (/api/live/estado)
 Cada tema guarda o histórico de giros separado no navegador (PREFIXO), pra live de um dia não misturar com a do outro.
 
 Uso: python build.py   (edite src/roleta.html, nunca os index.html direto)
@@ -19,13 +20,13 @@ import re
 RAIZ = pathlib.Path(__file__).parent
 # MIOLO = o que vai no centro da roda; FITA = faixa animada do topo (só no tema live)
 SEM_FAIXAS = {'FAIXAS': '[]', 'AJUDA_FAIXAS': '', 'MIOLO': '<div class="logo"></div>', 'FITA': ''}
-_FITA_TXT = ' · '.join(['ROLETA DE PRÊMIOS DA LIVE', 'R$ 350+ = 1 PRÊMIO', 'R$ 500+ = 3 PRÊMIOS', 'R$ 1.000+ = 10 PRÊMIOS'] * 4) + ' · '
+_FITA_TXT = ' · '.join(['ROLETA DE PRÊMIOS DA LIVE', 'R$ 350+ = 1 PRÊMIO', 'R$ 500+ = 2 PRÊMIOS', 'R$ 1.000+ = 10 PRÊMIOS'] * 4) + ' · '
 FITA_LIVE = ('<div id="fita" aria-hidden="true">'
              f'<div class="banda atras"><span class="trilho">{_FITA_TXT}{_FITA_TXT}</span></div>'
              f'<div class="banda frente"><span class="trilho">{_FITA_TXT}{_FITA_TXT}</span></div></div>')
-FAIXAS_LIVE = [{'rotulo': 'R$ 350+', 'premios': 1}, {'rotulo': 'R$ 500+', 'premios': 3}, {'rotulo': 'R$ 1.000+', 'premios': 10}]
+FAIXAS_LIVE = [{'rotulo': 'R$ 350+', 'premios': 1}, {'rotulo': 'R$ 500+', 'premios': 2}, {'rotulo': 'R$ 1.000+', 'premios': 10}]
 AJUDA_FAIXAS = ('<li><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>faixa do pedido da vez (R$ 350+, R$ 500+, R$ 1.000+): digite nome e '
-                'pedido, a tela conta "prêmio 1 de 3" e a planilha já sai preenchida. <kbd>Esc</kbd> cancela a faixa</li>')
+                'pedido, a tela conta "prêmio 1 de 2" e a planilha já sai preenchida. <kbd>Esc</kbd> cancela a faixa</li>')
 TEMAS = {
     'padrao': {'saida': 'index.html', 'TEMA': 'padrao', 'COR_TEMA': '#FAF7F2', 'TITULO_PAGINA': 'Nouê da Sorte',
                'TITULO': 'da sorte', 'SUBTITULO': '', 'PREFIXO': 'noue-da-sorte:', 'ARQUIVO': 'noue-da-sorte', **SEM_FAIXAS},
