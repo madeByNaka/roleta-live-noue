@@ -425,12 +425,17 @@ const CONFIG = {
 const PARAMS = new URLSearchParams(location.search);
 const RAPIDO = PARAMS.has('rapido');   // ?rapido = giro do clique em 2 s, só pra teste
 const JANELA = PARAMS.has('janela');   // ?janela = não força tela cheia
-const P = CONFIG.premios, N = P.length;
-const PESOS = P.map(p => p.peso ?? 1), TOTAL = PESOS.reduce((a, b) => a + b, 0);
-const LARG = PESOS.map(w => 360 * w / TOTAL); // largura de cada fatia em graus (= chance de cair)
-const INICIO = [], CENTRO = [];                 // a 1ª fatia fica centrada no ponteiro quando a roda está em 0
-let acumulado = -LARG[0] / 2;
-for (let i = 0; i < N; i++) { INICIO.push(acumulado); CENTRO.push(acumulado + LARG[i] / 2); acumulado += LARG[i]; }
+// A lista de prêmios pode trocar com a roda parada (tema conectada: vem da própria live, 21/10/2026), por isso é let.
+let P, N, PESOS, TOTAL, LARG, INICIO, CENTRO;
+function calcularRoda(lista) {
+  P = lista; N = P.length;
+  PESOS = P.map(p => p.peso ?? 1); TOTAL = PESOS.reduce((a, b) => a + b, 0);
+  LARG = PESOS.map(w => 360 * w / TOTAL); // largura de cada fatia em graus (= chance de cair)
+  INICIO = []; CENTRO = [];               // a 1ª fatia fica centrada no ponteiro quando a roda está em 0
+  let acumulado = -LARG[0] / 2;
+  for (let i = 0; i < N; i++) { INICIO.push(acumulado); CENTRO.push(acumulado + LARG[i] / 2); acumulado += LARG[i]; }
+}
+calcularRoda(CONFIG.premios);
 const R_FATIA = 442, R_MIOLO = 104, R_TEXTO = 392;
 const $ = s => document.querySelector(s);
 const palco = $('#palco'), caixa = $('#roda-caixa'), roda = $('#roda'), ponteiro = $('#ponteiro');
@@ -1006,7 +1011,7 @@ async function lerVez() {
     if (!r.ok) throw new Error(String(r.status));
     const j = await r.json();
     semPainelDesde = 0; avisouSemPainel = false;
-    if (j.live) acertarFita(j.live.faixas);
+    if (j.live) { acertarFita(j.live.faixas); acertarPremios(j.live.premios); }
     const v = j.vez;
     if (estado === 'girando' || estado === 'resultado') return; // nunca mexe no meio do giro nem com o cartão aberto
     if (v && (!lote || lote.compra !== v.compra)) {
@@ -1038,6 +1043,39 @@ function acertarFita(faixas) {
   if (texto === fitaAtual) return;   // só mexe quando muda: reescrever a cada 2 s faria a faixa pular
   fitaAtual = texto;
   document.querySelectorAll('#fita .trilho').forEach(t => { t.textContent = texto + texto; });
+}
+// Prêmios DA LIVE (21/10/2026, pedido do Luan): a roda é desenhada com a lista cadastrada na live (live.premios do
+// /api/live/estado), então trocar prêmio é trocar um dado, sem deploy. Cada prêmio: nome (é o que volta pro painel),
+// topo e destaque (as 2 linhas da fatia) e peso (tamanho da fatia e chance; brinde 0,5). Sem topo/destaque, sai do
+// nome (1ª palavra em cima, o resto embaixo, sem os tamanhos tipo 140ml). Só troca com a roda parada; no meio do giro
+// ou com o cartão aberto, espera a próxima leitura. Lista com menos de 2 prêmios é ignorada (fica a roda de antes).
+const chaveDaRoda = lista => JSON.stringify(lista.map(p => [p.nome, p.topo, p.destaque, p.peso ?? 1]));
+let rodaAtual = chaveDaRoda(CONFIG.premios);
+function premiosDaLive(lista) {
+  if (!Array.isArray(lista)) return null;
+  const ok = lista.filter(p => p && typeof p.nome === 'string' && p.nome.trim()).slice(0, 16).map(p => {
+    const nome = p.nome.trim().replace(/\s+/g, ' ');
+    const palavras = nome.split(' ').filter(w => !/\d/.test(w));
+    return {
+      tipo: 'produto', nome,
+      topo: String(p.topo || palavras[0] || '').trim().toUpperCase(),
+      destaque: String(p.destaque || palavras.slice(1).join(' ') || nome).trim().toUpperCase(),
+      peso: +p.peso > 0 ? +p.peso : 1,
+    };
+  });
+  return ok.length >= 2 ? ok : null;
+}
+function acertarPremios(lista) {
+  const novos = premiosDaLive(lista);
+  if (!novos) return;
+  const chave = chaveDaRoda(novos);
+  if (chave === rodaAtual || estado !== 'parado') return;
+  rodaAtual = chave;
+  calcularRoda(novos);
+  montarRoda();
+  ultimaFatia = -1;                       // sem "tique" na troca
+  angulo = LARG[0] / 2;                   // volta com uma divisa no ponteiro, como quando abre
+  roda.style.transform = `rotate(${angulo}deg)`;
 }
 function ligarConectada() {
   if (!CONFIG.conectada) return;
